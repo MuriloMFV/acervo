@@ -1,0 +1,9 @@
+{
+  "found": {
+    "code": "OK",
+    "items": [{ "ean": "0012345678905", "upc": "012345678905", "title": "Scream DVD Collector's Edition", "description": "DVD de filme", "brand": "Marca informada", "images": [" ", "javascript:alert(1)", "http://example.test/unsafe.jpg", "https://example.test/cover.jpg", "https://example.test/cover.jpg", "https://example.test/back.jpg"], "lowest_recorded_price": 99 }]
+  },
+  "withoutImage": { "code": "OK", "items": [{ "ean": "0012345678905", "title": "Scream Blu-ray", "images": [] }] },
+  "incomplete": { "code": "OK", "items": [{}] },
+  "notFound": { "code": "OK", "total": 0, "items": [] }
+}

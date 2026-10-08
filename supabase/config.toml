@@ -1,0 +1,8 @@
+[functions.search-edition-covers]
+verify_jwt = true
+
+[functions.save-edition-cover]
+verify_jwt = true
+
+[functions.lookup-barcode-web]
+verify_jwt = true

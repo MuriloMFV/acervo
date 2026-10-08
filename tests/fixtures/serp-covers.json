@@ -1,0 +1,8 @@
+{"images_results":[
+ {"title":"Platoon DVD Brasil","original":"https://http2.mlstatic.com/capa.jpg","thumbnail":"https://encrypted-tbn0.gstatic.com/images?q=capa","link":"https://example.com/produto","original_width":600,"original_height":900},
+ {"title":"Paisagem","original":"https://upload.wikimedia.org/wikipedia/test.jpg","original_width":900,"original_height":600},
+ {"title":"Loja com host não permitido","original":"https://example.com/capa.jpg","thumbnail":"https://encrypted-tbn1.gstatic.com/images?q=capa"},
+ {"title":"Sem imagem","original":"x-raw-image:///arquivo.pdf"},
+ {"original":"http://127.0.0.1/a","thumbnail":"file:///tmp/a"},
+ {"original":"https://http2.mlstatic.com/capa.jpg"}
+]}
