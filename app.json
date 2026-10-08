@@ -69,6 +69,7 @@
       }
     },
     "icon": "./assets/app-icon/icon.png",
-    "backgroundColor": "#11131A"
+    "backgroundColor": "#11131A",
+    "owner": "murilomfvs-dev"
   }
 }
