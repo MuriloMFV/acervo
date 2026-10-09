@@ -1,3 +1,5 @@
+import { CopyPhoto } from '../../src/components/collection/CopyPhoto';
+import { SuccessFeedbackHost } from '../../src/components/visual/SuccessFeedback';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from 'react-native';
@@ -57,10 +59,12 @@ export default function CollectionItemRoute() {
             {busy && <ActivityIndicator accessibilityLabel="Salvando alteração" color={colors.accent} />}
             {(favorite.isError || remove.isError) && <AppText accessibilityRole="alert" color="textMuted">Não foi possível salvar a alteração. Tente novamente.</AppText>}
             {!!item.movie.overview && <View style={styles.synopsis}><AppText variant="caption" color="textMuted">SINOPSE</AppText><AppText color="textSecondary">{item.movie.overview}</AppText></View>}
-            <EditionDetails item={item} />
+            <EditionDetails item={item} special={query.data?.edition.is_special_edition} limited={query.data?.edition.is_limited_edition} onEdit={() => router.navigate({ pathname: '/collection/edition-edit', params: { id: itemId } })} />
+            <CopyPhoto itemId={itemId} path={query.data?.photo_url ?? null} onEdit={() => router.navigate({ pathname: '/collection/edit', params: { id: itemId } })} />
           </View>
         </ScrollView>
       )}
+      <SuccessFeedbackHost />
     </Screen>
   );
 }

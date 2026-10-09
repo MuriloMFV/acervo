@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import LibraryBig from 'lucide-react-native/icons/library-big';
+import { AssetIcon } from '../visual/AssetIcon';
 import Plus from 'lucide-react-native/icons/plus';
 import UserRound from 'lucide-react-native/icons/user-round';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,7 +20,7 @@ export function BottomNavigation({ count, active = 'collection', onCollectionPre
     <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, spacing.sm) }]}>
       <Pressable accessibilityRole="button" accessibilityState={{ selected: active === 'collection' }} onPress={onCollectionPress} style={({ pressed }) => [styles.tab, pressed && styles.pressed]}>
         <View>
-          <LibraryBig size={controls.iconSize} color={active === 'collection' ? colors.accent : colors.textSecondary} />
+          <AssetIcon name="archive" size={controls.iconSize} color={active === 'collection' ? colors.accent : colors.textSecondary} />
           <View style={styles.count}><AppText variant="mediaBadge" color="accent">{count}</AppText></View>
         </View>
         <AppText variant="label" color={active === 'collection' ? 'accent' : 'textSecondary'}>Coleção</AppText>

@@ -37,10 +37,10 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
     backgroundColor: colors.surfaceElevated, borderRadius: radius.lg,
-    paddingHorizontal: spacing.md, paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
   },
   input: {
     flex: 1, minWidth: 0, minHeight: controls.minTouchSize,
-    ...typography.body, color: colors.text, paddingVertical: spacing.sm,
+    ...typography.label, color: colors.text, paddingVertical: spacing.sm,
   },
 });

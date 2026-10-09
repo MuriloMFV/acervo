@@ -6,6 +6,9 @@ import { AppText, Chip } from '../ui';
 import { FormField } from '../ui/FormField';
 import { ActionButton } from '../ui/ActionButton';
 import { ConditionSelector } from '../collection/ConditionSelector';
+import { MediaFormatIcon, AssetIcon } from '../visual/AssetIcon';
+import { useSuccessFeedback } from '../visual/SuccessFeedback';
+import { MediaFormatBadge } from '../movie/MediaFormatBadge';
 import { mediaFormatLabels } from '../movie/MediaFormatBadge';
 import { EditionImage } from './EditionImage';
 import { useSession } from '../../contexts/SessionContext';
@@ -20,27 +23,30 @@ import type { MovieDetails } from '../../types/movieSearch';
 import type { ItemCondition, MediaFormat, PackagingType } from '../../services/supabase/types';
 import { buildEditionCoverQuery } from '../../services/covers';
 import { EditionCoverPicker } from '../covers/EditionCoverPicker';
-import { spacing } from '../../theme';
+import { colors, spacing } from '../../theme';
 
-type Props = { barcode: string; onBusyChange?: (busy: boolean) => void } & (
+import type { BarcodeWebCandidate } from '../../types/barcodeWeb';
+
+type Props = { webCandidate?: BarcodeWebCandidate; barcode: string; onBusyChange?: (busy: boolean) => void } & (
   | { knownEdition: KnownEdition; movie?: never; candidate?: never }
   | { knownEdition?: never; movie: MovieDetails; candidate: EditionCandidate | null }
 );
-export function BarcodeConfirmation({ barcode, knownEdition, movie, candidate, onBusyChange }: Props) {
+export function BarcodeConfirmation({ barcode, knownEdition, movie, candidate, webCandidate, onBusyChange }: Props) {
   const router = useRouter();
+  const showSuccess = useSuccessFeedback();
   const cache = useQueryClient();
   const { session } = useSession();
-  const suggested = inferMediaFormat(candidate?.rawProductName ?? null);
+  const suggested = webCandidate?.detectedFormat ?? inferMediaFormat(candidate?.rawProductName ?? null);
   const [format, setFormat] = useState<MediaFormat | null>(knownEdition?.media_format ?? suggested);
   const [condition, setCondition] = useState<ItemCondition | null>(null);
   const [coverRejected, setCoverRejected] = useState(false);
   const [customCoverUrl, setCustomCoverUrl] = useState<string | null>(null);
   const [coverPickerOpen, setCoverPickerOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const [publisher, setPublisher] = useState('');
-  const [region, setRegion] = useState('');
-  const [country, setCountry] = useState('');
-  const [editionName, setEditionName] = useState(candidate?.rawProductName ?? '');
+  const [publisher, setPublisher] = useState(webCandidate?.detectedPublisher ?? '');
+  const [region, setRegion] = useState(webCandidate?.detectedRegion ?? '');
+  const [country, setCountry] = useState(webCandidate?.detectedCountry ?? '');
+  const [editionName, setEditionName] = useState(webCandidate?.detectedEditionName ?? candidate?.rawProductName ?? '');
   const [packaging, setPackaging] = useState<PackagingType>('STANDARD');
   const [special, setSpecial] = useState(false);
   const [limited, setLimited] = useState(false);
@@ -58,6 +64,7 @@ export function BarcodeConfirmation({ barcode, knownEdition, movie, candidate, o
     onSuccess: async (item) => {
       await cache.invalidateQueries({ queryKey: queryKeys.barcodes(session!.user.id), refetchType: 'none' });
       await cache.invalidateQueries({ queryKey: queryKeys.collection(session!.user.id) });
+      showSuccess();
       router.dismissTo({ pathname: '/', params: { added: item.id } });
     },
   });
@@ -88,17 +95,17 @@ export function BarcodeConfirmation({ barcode, knownEdition, movie, candidate, o
     {!knownEdition && candidate?.title && <AppText variant="caption" color="textMuted">Produto: {candidate.title}</AppText>}
     <AppText variant="caption" color="textMuted">{barcode}</AppText>
     {knownEdition ? <View style={styles.content}>
-      <AppText variant="heading">Minha edição</AppText><AppText>{mediaFormatLabels[knownEdition.media_format]}</AppText>
+      <AppText variant="heading">Minha edição</AppText><MediaFormatBadge mediaFormat={knownEdition.media_format} />
       {knownEdition.edition_name && <AppText color="textSecondary">{knownEdition.edition_name}</AppText>}
       {knownEdition.region && <AppText color="textSecondary">Região: {knownEdition.region}</AppText>}
       {knownEdition.publisher && <AppText color="textSecondary">Distribuidora: {knownEdition.publisher}</AppText>}
       {knownEdition.country && <AppText color="textSecondary">País: {knownEdition.country}</AppText>}
       {knownEdition.packaging_type !== 'STANDARD' && <AppText color="textSecondary">{packagingLabels[knownEdition.packaging_type]}</AppText>}
-      {knownEdition.is_special_edition && <AppText variant="caption">Edição especial</AppText>}
-      {knownEdition.is_limited_edition && <AppText variant="caption">Edição limitada</AppText>}
+      {knownEdition.is_special_edition && <View style={styles.editionLabel}><AssetIcon name="limited-edition" /><AppText variant="caption">Edição especial</AppText></View>}
+      {knownEdition.is_limited_edition && <View style={styles.editionLabel}><AssetIcon name="limited-edition" /><AppText variant="caption">Edição limitada</AppText></View>}
     </View> : <>
       <AppText variant="label">{suggested ? 'Formato sugerido' : 'Formato'}</AppText>
-      <View style={styles.choices}>{(Object.keys(mediaFormatLabels) as MediaFormat[]).map((value) => <Chip key={value} label={mediaFormatLabels[value]} selected={format === value} disabled={save.isPending} onPress={() => setFormat(value)} />)}</View>
+      <View style={styles.choices}>{(Object.keys(mediaFormatLabels) as MediaFormat[]).map((value) => <Chip hideLabel icon={<MediaFormatIcon format={value} color={format === value ? colors.onPrimary : colors.textSecondary} />} key={value} label={mediaFormatLabels[value]} selected={format === value} disabled={save.isPending} onPress={() => setFormat(value)} />)}</View>
       <ActionButton secondary label={detailsOpen ? 'Menos detalhes' : 'Mais detalhes'} disabled={save.isPending} onPress={() => setDetailsOpen((value) => !value)} />
       {detailsOpen && <View style={styles.content}>
         <FormField label="Nome da edição" value={editionName} onChangeText={setEditionName} editable={!save.isPending} />
@@ -106,13 +113,14 @@ export function BarcodeConfirmation({ barcode, knownEdition, movie, candidate, o
         <FormField label="Região / codificação" value={region} onChangeText={setRegion} editable={!save.isPending} />
         <FormField label="País" value={country} onChangeText={setCountry} editable={!save.isPending} />
         <AppText variant="label">Embalagem</AppText><View style={styles.choices}>{(Object.keys(packagingLabels) as PackagingType[]).map((value) => <Chip key={value} label={packagingLabels[value]} selected={packaging === value} disabled={save.isPending} onPress={() => setPackaging(value)} />)}</View>
-        <View style={styles.choices}><Chip label="Edição especial" selected={special} disabled={save.isPending} onPress={() => setSpecial((value) => !value)} /><Chip label="Edição limitada" selected={limited} disabled={save.isPending} onPress={() => setLimited((value) => !value)} /></View>
+        <View style={styles.choices}><Chip icon={<AssetIcon name="limited-edition" color={special ? colors.onPrimary : colors.textSecondary} />} label="Edição especial" selected={special} disabled={save.isPending} onPress={() => setSpecial((value) => !value)} /><Chip icon={<AssetIcon name="limited-edition" color={limited ? colors.onPrimary : colors.textSecondary} />} label="Edição limitada" selected={limited} disabled={save.isPending} onPress={() => setLimited((value) => !value)} /></View>
       </View>}
     </>}
+    {webCandidate && !knownEdition && <AppText variant="caption" color="textMuted">Dados sugeridos pela web · {webCandidate.sourceDomain}</AppText>}
     <ConditionSelector value={condition} onChange={setCondition} disabled={save.isPending} />
     {save.isError && <AppText accessibilityRole="alert" color="textMuted">{save.error instanceof EditionConflictError ? save.error.message : 'Não foi possível adicionar ao Acervo. Tente novamente.'}</AppText>}
     {save.error instanceof EditionConflictError && <ActionButton secondary label="Consultar edição" onPress={() => { void cache.invalidateQueries({ queryKey: queryKeys.barcode(session!.user.id, barcode) }).then(() => router.dismissTo('/add/barcode')); }} />}
     <ActionButton label="Adicionar ao Acervo" disabled={!condition || !format} busy={save.isPending} onPress={() => { void submit(); }} />
   </View>;
 }
-const styles = StyleSheet.create({ content: { gap: spacing.md }, choices: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm } });
+const styles = StyleSheet.create({ editionLabel: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm }, content: { gap: spacing.md }, choices: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm } });

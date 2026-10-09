@@ -1,7 +1,7 @@
 import Grid3X3 from 'lucide-react-native/icons/grid-3x3';
 import List from 'lucide-react-native/icons/list';
 import { StyleSheet, View } from 'react-native';
-import { colors, controls, radius, spacing } from '../../theme';
+import { colors, controls, radius } from '../../theme';
 import { IconButton } from '../ui/IconButton';
 
 export type CollectionView = 'grid' | 'list';
@@ -35,7 +35,7 @@ export function CollectionViewToggle({ value, onChange }: CollectionViewTogglePr
 }
 
 const styles = StyleSheet.create({
-  container: { flexDirection: 'row', alignSelf: 'flex-start', padding: spacing.xs, borderRadius: radius.md, backgroundColor: colors.surfaceElevated },
+  container: { flexDirection: 'row', alignSelf: 'flex-start', borderRadius: radius.md, backgroundColor: colors.surfaceElevated },
   button: { borderRadius: radius.md, backgroundColor: colors.surfaceElevated },
   selected: { backgroundColor: colors.surfaceActive },
 });

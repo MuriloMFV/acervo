@@ -25,6 +25,7 @@ export interface EditionDetailsPreview {
   barcode: string | null;
   packagingType?: PackagingType;
   editionName?: string;
+  discCount?: number | null;
 }
 
 export interface CollectionItemDetailsPreview {

@@ -10,4 +10,6 @@ export interface CollectionPreviewItem {
   poster: ImageSourcePropType | null;
   mediaFormat: MediaFormat;
   editionLabel?: string;
+  kind?: 'box';
+  movieCount?: number;
 }

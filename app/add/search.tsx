@@ -1,8 +1,9 @@
 import { useCallback, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { ActivityIndicator, FlatList, Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, View, type ListRenderItem } from 'react-native';
+import { FlatList, Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, View, type ListRenderItem } from 'react-native';
 import ArrowLeft from 'lucide-react-native/icons/arrow-left';
 import ArrowRight from 'lucide-react-native/icons/arrow-right';
+import { VisualFeedback } from '../../src/components/visual/VisualFeedback';
 import { MovieSearchField } from '../../src/components/add/MovieSearchField';
 import { MovieSearchResult } from '../../src/components/add/MovieSearchResult';
 import { AppText, IconButton, Screen } from '../../src/components/ui';
@@ -46,7 +47,7 @@ export default function MovieSearchScreen() {
           keyboardDismissMode="on-drag"
           contentContainerStyle={styles.list}
           initialNumToRender={8}
-          ListEmptyComponent={status === 'loading' ? <ActivityIndicator accessibilityLabel="Buscando filmes" color={colors.accent} style={styles.empty} /> : status === 'error' ? <AppText accessibilityRole="alert" color="textMuted" style={styles.empty}>Não foi possível buscar agora</AppText> : status === 'success' ? <AppText color="textMuted" style={styles.empty}>Nenhum filme encontrado</AppText> : null}
+          ListEmptyComponent={status === 'loading' ? <VisualFeedback animation="search" label="Buscando filmes" /> : status === 'error' ? <AppText accessibilityRole="alert" color="textMuted" style={styles.empty}>Não foi possível buscar agora</AppText> : status === 'success' ? <VisualFeedback animation="film" loop={false} label="Nenhum filme encontrado" /> : null}
           ListFooterComponent={
             <View style={styles.footer}>
               <Pressable accessibilityRole="button" onPress={handleManualRegistration} style={({ pressed }) => [styles.manual, pressed && styles.pressed]}>

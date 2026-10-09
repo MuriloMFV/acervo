@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
-import LibraryBig from 'lucide-react-native/icons/library-big';
+import { AssetIcon } from '../visual/AssetIcon';
 import UserRound from 'lucide-react-native/icons/user-round';
 import Search from 'lucide-react-native/icons/search';
 import { AppText, IconButton } from '../ui';
@@ -17,7 +17,7 @@ export function ProfileHeader({ profile, count, onCollectionPress, onAccountPres
   const url = profile?.avatar_url?.trim() || null;
   return <View style={styles.section}>
     <View style={styles.brandRow}>
-      <View style={styles.brandIcon}><LibraryBig size={controls.iconSize} color={colors.accent} /></View>
+      <View style={styles.brandIcon}><AssetIcon name="dvd-case" size={controls.iconSize + spacing.sm + spacing.xs} /></View>
       <View style={styles.title}><AppText variant="heading">Acervo</AppText><AppText variant="caption" color="textMuted">PERFIL</AppText></View>
       <IconButton accessibilityLabel="Buscar na coleção" onPress={onCollectionPress}><Search size={controls.iconSize} color={colors.textSecondary} /></IconButton>
       <IconButton accessibilityLabel="Conta" selected onPress={onAccountPress}><UserRound size={controls.iconSize} color={colors.onPrimary} /></IconButton>

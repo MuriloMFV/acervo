@@ -6,10 +6,11 @@ export async function lookupBarcodeWeb(value: string, signal?: AbortSignal): Pro
   const client = getSupabaseClient();
   const {data:auth,error:authError} = await client.auth.getSession();
   if (authError || !auth.session) throw new Error('Entre para continuar');
-  const {data,error} = await client.functions.invoke('lookup-barcode-web',{body:{barcode},headers:{Authorization:`Bearer ${auth.session.access_token}`},signal});
+  const {data,error,response} = await client.functions.invoke('lookup-barcode-web',{body:{barcode},headers:{Authorization:`Bearer ${auth.session.access_token}`},signal});
   if (error) {
     let message = 'Não foi possível consultar a web';
-    if (error.context instanceof Response) { try { const response = await error.context.json(); if (typeof response.error === 'string') message = response.error; } catch { /* Keep fallback. */ } }
+    const failedResponse = response ?? error.context;
+    if (failedResponse && typeof failedResponse.json === 'function') { try { const body = await failedResponse.json(); if (typeof body.error === 'string') message = body.error; } catch { /* Keep fallback. */ } }
     throw new Error(message);
   }
   if (data?.barcode !== barcode || !Array.isArray(data.candidates)) throw new Error('Resposta inválida');

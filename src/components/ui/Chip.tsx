@@ -1,18 +1,22 @@
+import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, type PressableProps } from 'react-native';
 import { colors, controls, radius, spacing } from '../../theme';
 import { AppText } from './AppText';
 
 export interface ChipProps extends Omit<PressableProps, 'children'> {
   label: string;
+  icon?: ReactNode;
+  hideLabel?: boolean;
   selected?: boolean;
 }
 
 export function Chip({
-  label, selected = false, disabled = false, style, accessibilityState, ...props
+  label, icon, hideLabel = false, accessibilityLabel, selected = false, disabled = false, style, accessibilityState, ...props
 }: ChipProps) {
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? label}
       {...props}
       disabled={disabled}
       accessibilityState={{ ...accessibilityState, selected, disabled: disabled ?? false }}
@@ -24,9 +28,10 @@ export function Chip({
         typeof style === 'function' ? style(state) : style,
       ]}
     >
-      <AppText variant="label" color={selected ? 'onPrimary' : 'text'}>
+      {icon}
+      {!hideLabel && <AppText variant="label" color={selected ? 'onPrimary' : 'text'}>
         {label}
-      </AppText>
+      </AppText>}
     </Pressable>
   );
 }
@@ -37,6 +42,8 @@ const styles = StyleSheet.create({
     minHeight: controls.minTouchSize,
     alignSelf: 'flex-start',
     alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
     justifyContent: 'center',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,

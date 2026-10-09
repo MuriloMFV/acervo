@@ -1,10 +1,11 @@
 import { memo } from 'react';
 import Film from 'lucide-react-native/icons/film';
-import { Image, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
-import { colors, controls, radius, spacing, typography } from '../../theme';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { colors, controls, radius, spacing } from '../../theme';
 import { movieLayout } from '../../theme/media';
 import type { CollectionPreviewItem } from '../../types/collectionPreview';
 import { AppText } from '../ui/AppText';
+import { Badge } from '../ui/Badge';
 import { MediaFormatBadge, mediaFormatLabels } from './MediaFormatBadge';
 
 export interface MovieCardProps {
@@ -14,15 +15,14 @@ export interface MovieCardProps {
 }
 
 export const MovieCard = memo(function MovieCard({ item, width, onPress }: MovieCardProps) {
-  const { fontScale } = useWindowDimensions();
   return (
     <Pressable
       accessible
       accessibilityRole={onPress ? 'button' : undefined}
       disabled={!onPress}
       onPress={() => onPress?.(item.id)}
-      accessibilityLabel={`${item.title}, ${item.year}, ${mediaFormatLabels[item.mediaFormat]}`}
-      style={({ pressed }) => [styles.card, { width }, pressed && { opacity: controls.pressedOpacity }]}
+      accessibilityLabel={[item.title, item.year, mediaFormatLabels[item.mediaFormat], item.kind === 'box' ? `Box, ${item.movieCount} filmes` : null].filter(value => value != null).join(', ')}
+      style={({ pressed }) => [{ width }, pressed && { opacity: controls.pressedOpacity }]}
     >
       <View style={styles.poster}>
         {item.poster ? (
@@ -33,7 +33,7 @@ export const MovieCard = memo(function MovieCard({ item, width, onPress }: Movie
           </View>
         )}
         <View style={styles.badge}>
-          <MediaFormatBadge mediaFormat={item.mediaFormat} />
+          {item.kind === 'box' ? <Badge label="BOX" tone="accent" /> : <MediaFormatBadge mediaFormat={item.mediaFormat} />}
         </View>
       </View>
       <View style={styles.metadata}>
@@ -41,21 +41,21 @@ export const MovieCard = memo(function MovieCard({ item, width, onPress }: Movie
           variant="movieTitle"
           numberOfLines={movieLayout.titleLines}
           ellipsizeMode="tail"
-          style={{ height: typography.movieTitle.lineHeight * movieLayout.titleLines * fontScale }}
+          style={styles.title}
         >
           {item.title}
         </AppText>
-        <AppText variant="caption" color="textMuted">{item.year ?? '—'}</AppText>
+        {item.kind === 'box' && <AppText variant="caption" color="textMuted" style={styles.title}>{item.movieCount} filmes</AppText>}
       </View>
     </Pressable>
   );
 });
 
 const styles = StyleSheet.create({
-  card: { borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.surfaceElevated },
-  poster: { width: '100%', aspectRatio: movieLayout.posterAspectRatio, backgroundColor: colors.surface },
+  poster: { width: '100%', aspectRatio: movieLayout.posterAspectRatio, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.surface },
   image: { width: '100%', height: '100%' },
   placeholder: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   badge: { position: 'absolute', top: spacing.xs, right: spacing.xs, maxWidth: '100%' },
-  metadata: { padding: spacing.xs, gap: spacing.xs },
+  metadata: { paddingTop: spacing.xs, paddingHorizontal: spacing.xs },
+  title: { textAlign: 'center' },
 });

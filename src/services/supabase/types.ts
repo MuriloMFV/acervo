@@ -1,4 +1,4 @@
-// Matches the initial migration. Regenerate from Supabase after applying it.
+// Matches checked-in migrations. Regenerate from Supabase after applying them.
 // Preview/mock types remain separate from persistence.
 export type MediaFormat = 'DVD' | 'BLURAY' | 'UHD_4K' | 'VHS';
 export type PackagingType = 'STANDARD' | 'STEELBOOK' | 'DIGIPAK' | 'BOX';
@@ -50,12 +50,28 @@ export type CollectionItemRow = Timestamps & {
   purchase_place: string | null;
   is_favorite: boolean;
   notes: string | null;
+  photo_url: string | null;
+  use_photo_as_cover: boolean;
 }
 
 type Relation<Name extends string, Column extends string, Target extends string> = {
   foreignKeyName: Name; columns: [Column]; isOneToOne: false;
   referencedRelation: Target; referencedColumns: ['id'];
 };
+export type BoxSetRow = Timestamps & {
+  id: string; created_by: string; name: string; barcode: string | null; cover_url: string | null;
+  media_format: MediaFormat; edition_name: string | null; publisher: string | null;
+  country: string | null; region: string | null; disc_count: number | null;
+  is_special_edition: boolean; is_limited_edition: boolean;
+};
+export type BoxSetMovieRow = { box_set_id: string; movie_id: string; position: number };
+export type CollectionBoxRow = Timestamps & {
+  id: string; user_id: string; box_set_id: string; condition: ItemCondition;
+  purchase_price: number | null; purchase_date: string | null; purchase_place: string | null;
+  notes: string | null; is_favorite: boolean;
+};
+export type BoxSetInput = Omit<BoxSetRow, keyof Timestamps | 'id' | 'created_by'>;
+export type BoxCopyInput = Pick<CollectionBoxRow, 'condition' | 'purchase_price' | 'purchase_date' | 'purchase_place' | 'notes'>;
 type Table<Row, Required extends keyof Row, Relationships extends object[] = []> = {
   Row: Row;
   Insert: Pick<Row, Required> & Partial<Omit<Row, Required>>;
@@ -70,9 +86,15 @@ export interface Database {
       movies: Table<MovieRow, 'title'>;
       editions: Table<EditionRow, 'movie_id' | 'media_format', [Relation<'editions_movie_id_fkey', 'movie_id', 'movies'>]>;
       collection_items: Table<CollectionItemRow, 'user_id' | 'edition_id' | 'condition', [Relation<'collection_items_edition_id_fkey', 'edition_id', 'editions'>]>;
+      box_sets: Table<BoxSetRow, 'created_by' | 'name' | 'media_format'>;
+      box_set_movies: Table<BoxSetMovieRow, 'box_set_id' | 'movie_id' | 'position', [Relation<'box_set_movies_box_set_id_fkey', 'box_set_id', 'box_sets'>, Relation<'box_set_movies_movie_id_fkey', 'movie_id', 'movies'>]>;
+      collection_boxes: Table<CollectionBoxRow, 'user_id' | 'box_set_id' | 'condition', [Relation<'collection_boxes_box_set_id_fkey', 'box_set_id', 'box_sets'>]>;
     };
     Views: { [_ in never]: never };
-    Functions: { [_ in never]: never };
+    Functions: {
+      create_collection_box: { Args: { p_expected_user_id: string; p_box: BoxSetInput; p_movie_ids: string[]; p_copy: BoxCopyInput }; Returns: string };
+      edit_collection_edition: { Args: { p_item_id: string; p_expected_edition_id: string; p_fields: { edition_name: string | null; publisher: string | null; country: string | null; region: string | null; disc_count: number | null; custom_cover_url: string | null } }; Returns: string }
+    };
     Enums: { media_format: MediaFormat; packaging_type: PackagingType; item_condition: ItemCondition };
     CompositeTypes: { [_ in never]: never };
   };

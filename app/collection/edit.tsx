@@ -1,15 +1,19 @@
 import { useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { AppText, Screen } from '../../src/components/ui';
+import { useSuccessFeedback } from '../../src/components/visual/SuccessFeedback';
 import { ActionButton } from '../../src/components/ui/ActionButton';
 import { FormField } from '../../src/components/ui/FormField';
 import { ConditionSelector } from '../../src/components/collection/ConditionSelector';
 import { useCollectionItem } from '../../src/hooks/useCollection';
 import { useSession } from '../../src/contexts/SessionContext';
 import { queryKeys } from '../../src/lib/queryClient';
-import { updateCollectionItem } from '../../src/services/collection';
+import { saveCopyChanges } from '../../src/services/collection/editing';
+import { PurchaseDateField } from '../../src/components/ui/PurchaseDateField';
+import { CopyPhoto } from '../../src/components/collection/CopyPhoto';
+import type { PhotoDraft } from '../../src/services/photos/validation';
 import { parseCopyForm } from '../../src/services/collection/mappers';
 import type { CollectionRecord, CopyFormValues } from '../../src/services/collection/types';
 import { colors, spacing } from '../../src/theme';
@@ -30,19 +34,24 @@ export default function EditCollectionItem() {
 }
 
 function CopyForm({ item, onBack }: { item: CollectionRecord; onBack: () => void }) {
+  const showSuccess = useSuccessFeedback();
   const { session } = useSession();
   const cache = useQueryClient();
-  const [values, setValues] = useState<CopyFormValues>({ condition: item.condition, price: item.purchase_price?.toString() ?? '', date: item.purchase_date ?? '', place: item.purchase_place ?? '', notes: item.notes ?? '' });
+  const [values, setValues] = useState<CopyFormValues>({ condition: item.condition, price: item.purchase_price?.toString() ?? '', date: item.purchase_date ?? '', place: item.purchase_place ?? '', notes: item.notes ?? '', favorite: item.is_favorite, usePhotoAsCover: item.use_photo_as_cover ?? false });
   const [error, setError] = useState('');
+  const [pickingPhoto, setPickingPhoto] = useState(false);
+  const [photo, setPhoto] = useState<PhotoDraft>({ action: 'keep' });
   const save = useMutation({
-    mutationFn: (data: ReturnType<typeof parseCopyForm>) => updateCollectionItem(item.id, data),
-    onSuccess: async () => { await cache.invalidateQueries({ queryKey: queryKeys.collection(session!.user.id) }); onBack(); },
+    mutationFn: (data: ReturnType<typeof parseCopyForm>) => saveCopyChanges(item.id, data, item.photo_url ?? null, photo),
+    onSuccess: async (result) => {
+      if (result.cleanupPending) console.warn('Foto anterior desvinculada; limpeza do Storage pendente.'); await cache.invalidateQueries({ queryKey: queryKeys.collection(session!.user.id) }); showSuccess(); onBack(); },
   });
+  const hasPhoto = photo.action === 'replace' || photo.action === 'keep' && !!item.photo_url;
   const field = (key: 'price' | 'date' | 'place' | 'notes') => (text: string) => setValues((previous) => ({ ...previous, [key]: text }));
   const submit = () => {
-    if (save.isPending) return;
+    if (save.isPending || pickingPhoto) return;
     setError('');
-    try { save.mutate(parseCopyForm(values)); } catch (cause) { setError(cause instanceof Error ? cause.message : 'Confira os dados'); }
+    try { save.mutate(parseCopyForm({ ...values, usePhotoAsCover: hasPhoto && !!values.usePhotoAsCover })); } catch (cause) { setError(cause instanceof Error ? cause.message : 'Confira os dados'); }
   };
   return <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
@@ -50,14 +59,20 @@ function CopyForm({ item, onBack }: { item: CollectionRecord; onBack: () => void
       <AppText color="textMuted">{item.edition.movie.title}</AppText>
       <ConditionSelector value={values.condition} onChange={(condition) => setValues((previous) => ({ ...previous, condition }))} disabled={save.isPending} />
       <FormField label="Preço pago" value={values.price} onChangeText={field('price')} keyboardType="decimal-pad" editable={!save.isPending} />
-      <FormField label="Data de aquisição" placeholder="AAAA-MM-DD" value={values.date} onChangeText={field('date')} keyboardType="numbers-and-punctuation" editable={!save.isPending} />
+      <PurchaseDateField value={values.date} onChange={field('date')} disabled={save.isPending} />
       <FormField label="Local de compra" value={values.place} onChangeText={field('place')} editable={!save.isPending} />
       <FormField label="Observações" value={values.notes} onChangeText={field('notes')} multiline editable={!save.isPending} />
+      <View style={styles.favorite}><AppText variant="label">Favorito</AppText><Switch accessibilityLabel="Favorito" value={values.favorite} disabled={save.isPending} onValueChange={favorite => setValues(previous => ({ ...previous, favorite }))} trackColor={{ false: colors.border, true: colors.primary }} thumbColor={colors.text} /></View>
+      <CopyPhoto itemId={item.id} path={item.photo_url ?? null} draft={photo} onChange={setPhoto} onBusyChange={setPickingPhoto} disabled={save.isPending} />
+      {hasPhoto && <View style={styles.favorite}>
+        <AppText variant="label" style={styles.toggleLabel}>Usar minha foto como capa</AppText>
+        <Switch accessibilityLabel="Usar minha foto como capa" value={!!values.usePhotoAsCover} disabled={save.isPending || pickingPhoto} onValueChange={usePhotoAsCover => setValues(previous => ({ ...previous, usePhotoAsCover }))} trackColor={{ false: colors.border, true: colors.primary }} thumbColor={colors.text} />
+      </View>}
       {(error || save.isError) && <AppText accessibilityRole="alert" color="textMuted">{error || 'Não foi possível salvar. Tente novamente.'}</AppText>}
-      <ActionButton label="Salvar" busy={save.isPending} onPress={submit} />
-      <ActionButton label="Cancelar" secondary disabled={save.isPending} onPress={onBack} />
+      <ActionButton label="Salvar" disabled={pickingPhoto} busy={save.isPending} onPress={submit} />
+      <ActionButton label="Cancelar" secondary disabled={save.isPending || pickingPhoto} onPress={onBack} />
     </ScrollView>
   </KeyboardAvoidingView>;
 }
 
-const styles = StyleSheet.create({ flex: { flex: 1 }, form: { gap: spacing.md, paddingVertical: spacing.lg, paddingBottom: spacing.xl } });
+const styles = StyleSheet.create({ flex: { flex: 1 }, toggleLabel: { flex: 1 }, favorite: { gap: spacing.sm, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, form: { gap: spacing.md, paddingVertical: spacing.lg, paddingBottom: spacing.xl } });

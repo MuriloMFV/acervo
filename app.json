@@ -10,25 +10,65 @@
       "ios"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.acervo"
     },
     "plugins": [
       "expo-router",
       "expo-status-bar",
       "expo-font",
-      "expo-splash-screen",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#11131A",
+          "image": "./assets/app-icon/splash.png",
+          "resizeMode": "contain",
+          "ios": {
+            "enableFullScreenImage_legacy": true
+          },
+          "android": {
+            "image": "./assets/app-icon/icon.png",
+            "imageWidth": 180
+          }
+        }
+      ],
       [
         "expo-camera",
         {
-          "cameraPermission": "O Acervo usa a câmera para ler códigos de barras da sua coleção.",
+          "cameraPermission": "O Acervo usa a câmera para ler códigos de barras e fotografar sua cópia física.",
           "microphonePermission": false,
           "recordAudioAndroid": false,
           "barcodeScannerEnabled": true
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O Acervo usa a galeria para adicionar uma foto da sua cópia.",
+          "cameraPermission": "O Acervo usa a câmera para ler códigos de barras e fotografar sua cópia física.",
+          "microphonePermission": false
+        }
+      ],
+      "expo-sharing",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "android": {
+      "package": "com.anonymous.acervo",
+      "permissions": [
+        "android.permission.CAMERA"
+      ]
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "904229fa-eb4e-44a7-8a56-3ce96abe3f88"
+      }
+    },
+    "icon": "./assets/app-icon/icon.png",
+    "backgroundColor": "#11131A"
   }
 }

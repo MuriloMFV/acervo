@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ScanBarcode from 'lucide-react-native/icons/scan-barcode';
 import Search from 'lucide-react-native/icons/search';
 import FilePen from 'lucide-react-native/icons/file-pen';
+import Boxes from 'lucide-react-native/icons/boxes';
 import ChevronRight from 'lucide-react-native/icons/chevron-right';
 import X from 'lucide-react-native/icons/x';
 import { AppText, IconButton } from '../ui';
@@ -14,6 +15,7 @@ interface AddMethodSheetProps {
   onSearch: () => void;
   onScan: () => void;
   onManual: () => void;
+  onBox: () => void;
 }
 
 function AddMethodOption({ label, icon, highlighted = false, onPress }: {
@@ -28,7 +30,7 @@ function AddMethodOption({ label, icon, highlighted = false, onPress }: {
   );
 }
 
-export function AddMethodSheet({ onClose, onSearch, onScan, onManual }: AddMethodSheetProps) {
+export function AddMethodSheet({ onClose, onSearch, onScan, onManual, onBox }: AddMethodSheetProps) {
   const insets = useSafeAreaInsets();
   return (
     <View style={styles.overlay} accessibilityViewIsModal onAccessibilityEscape={onClose}>
@@ -44,6 +46,7 @@ export function AddMethodSheet({ onClose, onSearch, onScan, onManual }: AddMetho
           <AddMethodOption label="Escanear código de barras" highlighted icon={<ScanBarcode size={controls.iconSize} color={colors.accent} />} onPress={onScan} />
           <AddMethodOption label="Buscar filme" icon={<Search size={controls.iconSize} color={colors.textSecondary} />} onPress={onSearch} />
           <AddMethodOption label="Cadastro manual" icon={<FilePen size={controls.iconSize} color={colors.textSecondary} />} onPress={onManual} />
+          <AddMethodOption label="Adicionar box" icon={<Boxes size={controls.iconSize} color={colors.textSecondary} />} onPress={onBox} />
         </ScrollView>
       </View>
     </View>

@@ -18,6 +18,7 @@ export function normalizeBarcodeWebResults(body: unknown, value: string): Barcod
   const barcode = validatedBarcode(value);
   if (!body || typeof body !== 'object') throw new Error('Resposta inválida');
   const data = body as Record<string,unknown>;
+  if (typeof data.error === 'string' && /^Google (?:hasn't|has not) returned any results for this query\.?$/i.test(data.error.trim())) return [];
   if (data.error) throw new Error('Busca web indisponível');
   if (data.organic_results === undefined) {
     const info = data.search_information as Record<string,unknown> | undefined;

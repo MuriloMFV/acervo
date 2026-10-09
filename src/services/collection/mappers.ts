@@ -9,7 +9,7 @@ export function isCollectionItemId(id: string): boolean {
 }
 
 export function collectionCover(item: CollectionRecord): string | null {
-  return editionCover(item.edition);
+  return item.use_photo_as_cover && item.photo_url && item.photo_cover_url?.trim() || editionCover(item.edition);
 }
 export function editionCover(edition: KnownEdition): string | null {
   return edition.custom_cover_url?.trim() || edition.product_image_url?.trim() || edition.movie.poster_url?.trim() || null;
@@ -25,7 +25,7 @@ export function mapCollectionDetails(item: CollectionRecord): CollectionItemDeta
   return {
     id: item.id,
     movie: { title: movie.title, originalTitle: movie.original_title ?? '', year: movie.release_year, director: movie.director ?? '', genres: movie.genres, runtime: movie.runtime, overview: movie.overview ?? '', poster: cover ? { uri: cover } : null, backdrop: movie.backdrop_url ? { uri: movie.backdrop_url } : null },
-    edition: { mediaFormat: edition.media_format, region: edition.region, country: edition.country, publisher: edition.publisher, barcode: edition.barcode, packagingType: edition.packaging_type, editionName: edition.edition_name ?? undefined },
+    edition: { mediaFormat: edition.media_format, region: edition.region, country: edition.country, publisher: edition.publisher, barcode: edition.barcode, packagingType: edition.packaging_type, editionName: edition.edition_name ?? undefined, discCount: edition.disc_count },
     copy: { condition: item.condition, purchasePrice: item.purchase_price, purchaseDate: item.purchase_date, favorite: item.is_favorite, purchasePlace: item.purchase_place, notes: item.notes },
   };
 }
@@ -51,5 +51,5 @@ export function parseCopyForm(form: CopyFormValues): CopyUpdate {
     const parsed = /^\d{4}-\d{2}-\d{2}$/.test(date) ? new Date(`${date}T00:00:00Z`) : new Date(NaN);
     if (!Number.isFinite(parsed.getTime()) || parsed.getUTCFullYear() < 1 || parsed.toISOString().slice(0, 10) !== date) throw new Error('Data inválida. Use AAAA-MM-DD.');
   }
-  return { condition: form.condition, purchase_price: amount ? Number(amount.replace(',', '.')) : null, purchase_date: date || null, purchase_place: form.place.trim() || null, notes: form.notes.trim() || null };
+  return { ...(form.usePhotoAsCover === undefined ? {} : { use_photo_as_cover: form.usePhotoAsCover }), ...(form.favorite === undefined ? {} : { is_favorite: form.favorite }), condition: form.condition, purchase_price: amount ? Number(amount.replace(',', '.')) : null, purchase_date: date || null, purchase_place: form.place.trim() || null, notes: form.notes.trim() || null };
 }

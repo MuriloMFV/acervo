@@ -16,6 +16,8 @@ Deno.serve(async req => {
     const response = await fetch(url,{redirect:'error',signal:AbortSignal.timeout(15000)});
     if (!response.ok) { await response.body?.cancel(); return json({error:'Busca web indisponível'},response.status === 429 ? 429 : 502); }
     const data = JSON.parse(new TextDecoder().decode(await readLimited(response,2*1024*1024)));
-    return json({barcode,candidates:normalizeBarcodeWebResults(data,barcode)});
+    const candidates = normalizeBarcodeWebResults(data,barcode);
+    console.info(JSON.stringify({stage:'serpapi',status:200,candidates:candidates.length}));
+    return json({barcode,candidates});
   } catch(error) { return failure(error); }
 });

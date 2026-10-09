@@ -19,7 +19,7 @@ function Row({ label, icon, value, onPress, last = false }: { label: string; ico
     {icon}<AppText variant="label" style={styles.title}>{label}</AppText>{value && <AppText variant="caption" color="textMuted">{value}</AppText>}{onPress && <ChevronRight size={spacing.md} color={colors.textMuted} />}
   </Pressable>;
 }
-export function ProfileLinks({ stats, onShortcut, onAccount }: { stats: CollectionStats | null; onShortcut: (value: CollectionShortcut) => void; onAccount: () => void }) {
+export function ProfileLinks({ stats, onShortcut, onAccount, onAbout, onExport, exporting = false }: { stats: CollectionStats | null; onShortcut: (value: CollectionShortcut) => void; onAccount: () => void; onAbout: () => void; onExport: () => void; exporting?: boolean }) {
   const iconProps = { size: controls.iconSize, color: colors.textSecondary };
   const shortcutIcon = { ...iconProps, color: colors.accent };
   return <>
@@ -32,8 +32,8 @@ export function ProfileLinks({ stats, onShortcut, onAccount }: { stats: Collecti
       <Row label="Conta" icon={<UserRound {...iconProps} />} onPress={onAccount} />
       <Row label="Aparência" icon={<Palette {...iconProps} />} value="Escuro" />
       <Row label="Backup e sincronização" icon={<Cloud {...iconProps} />} />
-      <Row label="Exportar acervo" icon={<Download {...iconProps} />} />
-      <Row label="Sobre o Acervo" icon={<Info {...iconProps} />} last />
+      <Row label="Exportar acervo" icon={<Download {...iconProps} />} value={exporting ? 'Gerando PDF…' : undefined} onPress={exporting ? undefined : onExport} />
+      <Row label="Sobre o Acervo" icon={<Info {...iconProps} />} onPress={onAbout} last />
     </View></View>
   </>;
 }

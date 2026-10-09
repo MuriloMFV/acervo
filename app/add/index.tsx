@@ -7,5 +7,5 @@ const handlePendingAction = () => {};
 export default function AddScreen() {
   const router = useRouter();
   const close = () => router.canGoBack() ? router.back() : router.replace('/');
-  return <AddMethodSheet onClose={close} onSearch={() => router.navigate('/add/search')} onScan={() => router.navigate('/add/scanner')} onManual={handlePendingAction} />;
+  return <AddMethodSheet onClose={close} onSearch={() => router.navigate('/add/search')} onScan={() => router.navigate('/add/scanner')} onManual={handlePendingAction} onBox={() => router.navigate('/add/box')} />;
 }

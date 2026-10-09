@@ -7,6 +7,7 @@ import CalendarDays from 'lucide-react-native/icons/calendar-days';
 import ArrowUpDown from 'lucide-react-native/icons/arrow-up-down';
 import Banknote from 'lucide-react-native/icons/banknote';
 import { AppText, Chip, IconButton, Screen } from '../ui';
+import { AssetIcon, MediaFormatIcon } from '../visual/AssetIcon';
 import { ActionButton } from '../ui/ActionButton';
 import { mediaFormatLabels } from '../movie/MediaFormatBadge';
 import { colors, controls, radius, spacing } from '../../theme';
@@ -29,12 +30,12 @@ function SortIcon({ sort, selected }: { sort: CollectionSort; selected: boolean 
   const Icon = sort.startsWith('TITLE') ? ArrowUpDown : sort.startsWith('YEAR') ? CalendarDays : sort.startsWith('PRICE') ? Banknote : Clock;
   return <Icon size={controls.iconSize} color={selected ? colors.accent : colors.textMuted} />;
 }
-function Choices<T extends string | number>({ values, selected, label, onChange }: {
-  values: readonly T[]; selected: readonly T[]; label: (value: T) => string; onChange: (values: T[]) => void;
+function Choices<T extends string | number>({ values, selected, label, onChange, icon, iconOnly = false }: {
+  iconOnly?: boolean; icon?: (value: T) => ReactNode; values: readonly T[]; selected: readonly T[]; label: (value: T) => string; onChange: (values: T[]) => void;
 }) {
   return <View style={styles.choices}>
     <Chip label="Todos" selected={!selected.length} onPress={() => onChange([])} />
-    {values.map((value) => <Chip key={value} label={label(value)} selected={selected.includes(value)} onPress={() => onChange(toggleFilterValue(selected, value))} />)}
+    {values.map((value) => <Chip hideLabel={iconOnly} icon={icon?.(value)} key={value} label={label(value)} selected={selected.includes(value)} onPress={() => onChange(toggleFilterValue(selected, value))} />)}
   </View>;
 }
 export function CollectionFiltersPanel({ filters, options, onApply, onClear, onClose }: Props) {
@@ -57,8 +58,8 @@ export function CollectionFiltersPanel({ filters, options, onApply, onClear, onC
             <View style={[styles.radio, draft.sort === option.value && styles.selectedRadio]}>{draft.sort === option.value && <Check size={spacing.md} color={colors.onPrimary} />}</View>
           </Pressable>)}
         </Section>
-        <Section title="Formato"><Choices values={Object.keys(mediaFormatLabels) as MediaFormat[]} selected={draft.formats} label={(v) => mediaFormatLabels[v]} onChange={(v) => update('formats', v)} /></Section>
-        <Section title="Tipo de edição"><Choices values={Object.keys(editionFilterLabels) as EditionFilter[]} selected={draft.editions} label={(v) => editionFilterLabels[v]} onChange={(v) => update('editions', v)} /></Section>
+        <Section title="Formato"><Choices iconOnly values={Object.keys(mediaFormatLabels) as MediaFormat[]} selected={draft.formats} icon={(value) => <MediaFormatIcon format={value} color={draft.formats.includes(value) ? colors.onPrimary : colors.textSecondary} />} label={(v) => mediaFormatLabels[v]} onChange={(v) => update('formats', v)} /></Section>
+        <Section title="Tipo de edição"><Choices values={Object.keys(editionFilterLabels) as EditionFilter[]} selected={draft.editions} icon={(value) => value === 'SPECIAL' || value === 'LIMITED' ? <AssetIcon name="limited-edition" color={draft.editions.includes(value) ? colors.onPrimary : colors.textSecondary} /> : null} label={(v) => editionFilterLabels[v]} onChange={(v) => update('editions', v)} /></Section>
         {options.genres.length > 0 && <Section title="Gênero"><Choices values={options.genres} selected={draft.genres} label={(v) => v} onChange={(v) => update('genres', v)} /></Section>}
         <Section title="Década"><Choices values={options.decades} selected={draft.decades} label={(v) => `${v}s`} onChange={(v) => update('decades', v)} /></Section>
         <Section title="Condição"><Choices values={Object.keys(conditionLabels) as ItemCondition[]} selected={draft.conditions} label={(v) => conditionLabels[v]} onChange={(v) => update('conditions', v)} /></Section>

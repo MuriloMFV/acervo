@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ActivityIndicator, FlatList, Image, Modal, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, Image, Modal, Pressable, StyleSheet, View } from 'react-native';
 import ArrowLeft from 'lucide-react-native/icons/arrow-left';
 import { AppText, IconButton, Screen } from '../ui';
 import { FormField } from '../ui/FormField';
+import { VisualFeedback } from '../visual/VisualFeedback';
 import { ActionButton } from '../ui/ActionButton';
 import { useSession } from '../../contexts/SessionContext';
 import { saveEditionCover, searchEditionCovers } from '../../services/covers';
@@ -64,11 +65,11 @@ export function EditionCoverPicker({ initialQuery, title, onClose, onSelect }: {
       </View> : <>
         <FormField label="Busca" value={input} onChangeText={setInput} maxLength={240} returnKeyType="search" onSubmitEditing={search} />
         <View style={styles.search}><ActionButton label="Pesquisar" busy={results.isFetching} disabled={input.trim().length < 2} onPress={search} /></View>
-        {results.isFetching && <ActivityIndicator color={colors.accent} accessibilityLabel="Buscando capas" />}
+        {results.isFetching && <VisualFeedback animation="search" label="Buscando capas" />}
         {results.isError && <AppText accessibilityRole="alert" color="textMuted">{results.error.message}</AppText>}
         <FlatList data={(results.data ?? []).filter(item => !failed.includes(item.id))} numColumns={2} keyExtractor={item => item.id}
           columnWrapperStyle={styles.row} contentContainerStyle={styles.grid} keyboardShouldPersistTaps="handled"
-          ListEmptyComponent={query && !results.isFetching && !results.isError ? <AppText color="textMuted">Nenhuma capa encontrada</AppText> : null}
+          ListEmptyComponent={query && !results.isFetching && !results.isError ? <VisualFeedback animation="film" loop={false} label="Nenhuma capa encontrada" /> : null}
           renderItem={({ item }) => <Pressable accessibilityRole="button" accessibilityLabel={`Escolher capa ${item.sourceTitle}`} onPress={() => { setPreviewFailed(false); setSelected(item); }} style={styles.card}>
             <Image source={{ uri: item.thumbnailUrl }} style={styles.thumbnail} resizeMode="contain" resizeMethod="resize" onError={() => setFailed(old => [...old, item.id])} />
           </Pressable>} />

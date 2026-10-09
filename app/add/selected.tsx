@@ -14,6 +14,8 @@ import { queryKeys } from '../../src/lib/queryClient';
 import { createCollectionItem } from '../../src/services/collection';
 import { getMovieDetails } from '../../src/services/tmdb';
 import type { MediaFormat, ItemCondition } from '../../src/services/supabase/types';
+import { MediaFormatIcon } from '../../src/components/visual/AssetIcon';
+import { useSuccessFeedback } from '../../src/components/visual/SuccessFeedback';
 import { mediaFormatLabels } from '../../src/components/movie/MediaFormatBadge';
 import { colors, controls, radius, spacing } from '../../src/theme';
 import { movieLayout } from '../../src/theme/media';
@@ -21,6 +23,7 @@ import { movieLayout } from '../../src/theme/media';
 export default function SelectedMovieScreen() {
   const { id } = useLocalSearchParams<{ id?: string | string[] }>();
   const router = useRouter();
+  const showSuccess = useSuccessFeedback();
   const { session } = useSession();
   const cache = useQueryClient();
   const movieId = typeof id === 'string' ? id : '';
@@ -43,6 +46,7 @@ export default function SelectedMovieScreen() {
     },
     onSuccess: async (item) => {
       await cache.invalidateQueries({ queryKey: queryKeys.collection(session!.user.id) });
+      showSuccess();
       router.dismissTo({ pathname: '/', params: { added: item.id } });
     },
   });
@@ -72,7 +76,7 @@ export default function SelectedMovieScreen() {
           <AppText color="textMuted">{movie.data.year ?? '—'}</AppText>
           <AppText variant="label">Formato</AppText>
           <View style={styles.formats}>
-            {(Object.keys(mediaFormatLabels) as MediaFormat[]).map((value) => <Chip key={value} label={mediaFormatLabels[value]} selected={format === value} onPress={() => setFormat(value)} disabled={save.isPending} />)}
+            {(Object.keys(mediaFormatLabels) as MediaFormat[]).map((value) => <Chip hideLabel icon={<MediaFormatIcon format={value} color={format === value ? colors.onPrimary : colors.textSecondary} />} key={value} label={mediaFormatLabels[value]} selected={format === value} onPress={() => setFormat(value)} disabled={save.isPending} />)}
           </View>
           <ActionButton secondary label={detailsOpen ? 'Menos detalhes' : 'Mais detalhes'} disabled={save.isPending} onPress={() => setDetailsOpen(value => !value)} />
           {detailsOpen && <>

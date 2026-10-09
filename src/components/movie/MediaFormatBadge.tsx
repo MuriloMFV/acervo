@@ -1,6 +1,7 @@
+import { MediaFormatIcon } from '../visual/AssetIcon';
 import { StyleSheet } from 'react-native';
 import { mediaFormatColors } from '../../theme/media';
-import { spacing, typography } from '../../theme';
+import { spacing } from '../../theme';
 import type { MediaFormat } from '../../types/collectionPreview';
 import { Badge } from '../ui/Badge';
 
@@ -12,9 +13,10 @@ export function MediaFormatBadge({ mediaFormat }: { mediaFormat: MediaFormat }) 
   const palette = mediaFormatColors[mediaFormat];
   return (
     <Badge
+      hideLabel
+      icon={<MediaFormatIcon format={mediaFormat} size={spacing.lg + spacing.xs} color={palette.foreground} />}
       label={mediaFormatLabels[mediaFormat]}
       style={[styles.badge, { backgroundColor: palette.background }]}
-      textStyle={[typography.mediaBadge, { color: palette.foreground }]}
     />
   );
 }

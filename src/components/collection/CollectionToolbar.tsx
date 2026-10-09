@@ -29,8 +29,8 @@ export function CollectionToolbar({ sort, onSortChange, view, onViewChange, onFi
           <AppText variant="label" color={filtersActive ? 'accent' : 'text'}>Filtros</AppText>
         </Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel={`Ordenar: ${current.label}`} accessibilityState={{ expanded: menuOpen }} onPress={() => setMenuOpen(true)} style={({ pressed }) => [styles.button, styles.sort, pressed && styles.pressed]}>
-          <AppText variant="caption" color="textSecondary">Ordenar: {current.shortLabel}</AppText>
-          <ChevronDown size={controls.iconSize} color={colors.textSecondary} />
+          <AppText variant="caption" color="textSecondary">{current.shortLabel}</AppText>
+          <ChevronDown size={spacing.md} color={colors.textSecondary} />
         </Pressable>
         <CollectionViewToggle value={view} onChange={onViewChange} />
       </View>
@@ -53,7 +53,7 @@ export function CollectionToolbar({ sort, onSortChange, view, onViewChange, onFi
 }
 
 const styles = StyleSheet.create({
-  toolbar: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.sm },
+  toolbar: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.xs },
   button: { minHeight: controls.minTouchSize, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.xs, paddingHorizontal: spacing.sm, borderRadius: radius.md, backgroundColor: colors.surfaceElevated },
   sort: { flexGrow: 1 },
   pressed: { opacity: controls.pressedOpacity },

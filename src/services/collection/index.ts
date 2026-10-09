@@ -3,6 +3,7 @@ import type { MediaFormat, ItemCondition } from '../supabase/types';
 import type { CollectionRecord, CopyUpdate, MovieForCollection } from './types';
 import { copyPayload, editionPayload, isStandardEdition, isCollectionItemId, moviePayload } from './mappers';
 import { reuseOrCreate } from './reuse';
+import { removeCopyPhoto } from '../photos';
 
 const relations = '*,edition:editions!inner(*,movie:movies!inner(*))' as const;
 export async function authenticatedUserId() {
@@ -89,7 +90,11 @@ export async function updateFavorite(id: string, value: boolean) {
 }
 export async function deleteCollectionItem(id: string) {
   const userId = await authenticatedUserId();
-  const { data, error } = await getSupabaseClient().from('collection_items').delete().eq('id', id).eq('user_id', userId).select('id').single();
+  const { data, error } = await getSupabaseClient().from('collection_items').delete().eq('id', id).eq('user_id', userId).select('id,photo_url').single();
   if (error) throw error;
-  return data;
+  if (data.photo_url) {
+    try { await removeCopyPhoto(userId, id, data.photo_url); }
+    catch { console.warn('Cópia removida; limpeza da foto no Storage pendente.'); }
+  }
+  return { id: data.id };
 }

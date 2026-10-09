@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { AppText, Screen } from '../src/components/ui';
 import { ActionButton } from '../src/components/ui/ActionButton';
 import { BottomNavigation } from '../src/components/collection/BottomNavigation';
@@ -13,11 +13,24 @@ import { useCollectionFilters } from '../src/contexts/CollectionFiltersContext';
 import { calculateCollectionStats } from '../src/utils/collectionStats';
 import type { CollectionShortcut } from '../src/types/collectionFilters';
 import { colors, spacing } from '../src/theme';
+import { useSession } from '../src/contexts/SessionContext';
+import { exportCollectionPdf } from '../src/services/export';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const collection = useCollection();
   const profile = useProfile();
+  const { session } = useSession();
+  const exportLock = useRef(false);
+  const [exporting, setExporting] = useState(false);
+  const exportAcervo = async () => {
+    if (exportLock.current || !session) return;
+    exportLock.current = true;
+    setExporting(true);
+    try { await exportCollectionPdf(session.user.id); }
+    catch { Alert.alert('Exportar Acervo', 'Não foi possível gerar ou compartilhar o PDF. Verifique sua conexão e tente novamente.'); }
+    finally { exportLock.current = false; setExporting(false); }
+  };
   const { applyShortcut } = useCollectionFilters();
   const stats = useMemo(() => collection.data ? calculateCollectionStats(collection.data) : null, [collection.data]);
   const openCollection = () => router.dismissTo('/');
@@ -31,7 +44,7 @@ export default function ProfileScreen() {
       {collection.isPending && <ActivityIndicator accessibilityLabel="Carregando estatísticas" color={colors.accent} />}
       {collection.isError && <View style={styles.error}><AppText color="textMuted">Não foi possível carregar as estatísticas</AppText><ActionButton secondary label="Tentar novamente" onPress={() => { void collection.refetch(); }} /></View>}
       {stats && <CollectionStatistics stats={stats} />}
-      <ProfileLinks stats={stats} onShortcut={openShortcut} onAccount={openAccount} />
+      <ProfileLinks stats={stats} onShortcut={openShortcut} onAccount={openAccount} onAbout={() => router.navigate('/about')} onExport={() => { void exportAcervo(); }} exporting={exporting} />
     </ScrollView>
     <BottomNavigation active="profile" count={stats?.total ?? 0} onCollectionPress={openCollection} onAddPress={() => router.navigate('/add')} onProfilePress={() => {}} />
   </Screen>;
