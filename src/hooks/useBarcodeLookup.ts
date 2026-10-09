@@ -7,5 +7,5 @@ import { isValidBarcode, normalizeBarcode } from '../utils/barcode';
 export function useBarcodeLookup(code: string) {
   const { session } = useSession();
   const barcode = normalizeBarcode(code);
-  return useQuery({ queryKey: queryKeys.barcode(session?.user.id ?? '', barcode), queryFn: ({ signal }) => lookupBarcode(barcode, signal), enabled: !!session && isValidBarcode(barcode), staleTime: 300_000, gcTime: 600_000, retry: false, refetchOnWindowFocus: false });
+  return useQuery({ queryKey: queryKeys.barcode(session?.user.id ?? '', barcode), queryFn: ({ signal }) => lookupBarcode(barcode, signal), enabled: !!session && isValidBarcode(barcode), staleTime: 600_000, gcTime: 600_000, retry: false, retryOnMount: false, refetchOnWindowFocus: false, refetchOnReconnect: false, refetchOnMount: false });
 }

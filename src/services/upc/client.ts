@@ -19,6 +19,13 @@ export async function upcGet(code: string, signal?: AbortSignal): Promise<unknow
   try {
     const response = await fetch(`${endpoint}?${new URLSearchParams({ upc: code })}`, { headers: { Accept: 'application/json' }, signal: controller.signal });
     if (response.status === 429) throw new UpcError('rate-limit', 429);
+    // The app accepts EAN/UPC lengths without enforcing provider checksum rules.
+    // A provider-specific rejection can still be searched on the web.
+    if (response.status === 400) {
+      const body: unknown = await response.json();
+      if (body && typeof body === 'object' && 'code' in body && body.code === 'INVALID_UPC') return { code: 'OK', items: [] };
+      throw new UpcError('http', 400);
+    }
     // Check the documented error code so a wrong route isn't mistaken for no item.
     if (response.status === 404) {
       const body: unknown = await response.json();

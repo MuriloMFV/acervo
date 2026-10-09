@@ -46,7 +46,7 @@ test('UPC mapper selects first usable HTTPS image, deduplicates and exposes no r
 });
 test('missing images, name and metadata remain absent without invented distributor', () => {
   assert.equal(mapUpcResponse(fixtures.withoutImage, code).primaryImageUrl, null);
-  assert.deepEqual(mapUpcResponse(fixtures.incomplete, code), { source: 'UPCITEMDB', barcode: code, title: null, rawProductName: null, description: null, brand: null, publisher: null, images: [], primaryImageUrl: null });
+  assert.equal(mapUpcResponse(fixtures.incomplete, code), null);
   assert.equal(mapUpcProduct({ brand: '  Marca  ', images: 'not-an-array' }, code).brand, 'Marca');
 });
 test('EAN-8 response represented by UPCitemdb as padded EAN-13 maps to original code', () => {
@@ -54,10 +54,10 @@ test('EAN-8 response represented by UPCitemdb as padded EAN-13 maps to original 
   assert.equal(result.barcode, '96385074');
   assert.equal(result.title, 'Produto EAN-8');
 });
-test('not found is distinct from malformed, ambiguous or wrong-barcode responses', () => {
+test('not found is distinct from malformed envelopes and API errors', () => {
   assert.equal(mapUpcResponse(fixtures.notFound, code), null);
   assert.equal(mapUpcResponse({ code: 'NOT_FOUND' }, code), null);
-  for (const body of [null, {}, { code: 'OK' }, { code: 'OK', items: [null] }, { code: 'OK', items: [{ ean: '7891234567890' }] }, { code: 'OK', items: [{}, {}] }, { code: 'SERVER_ERR' }]) assert.throws(() => mapUpcResponse(body, code), (error) => error instanceof UpcError && error.kind === 'response');
+  for (const body of [null, {}, { code: 'OK' }, { code: 'SERVER_ERR' }]) assert.throws(() => mapUpcResponse(body, code), (error) => error instanceof UpcError && error.kind === 'response');
 });
 test('Supabase-first skips UPC when the Edition is known', async () => {
   const edition = { id: 'known' }; const calls = [];

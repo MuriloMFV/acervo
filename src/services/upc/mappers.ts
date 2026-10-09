@@ -22,12 +22,13 @@ export function mapUpcResponse(response: unknown, barcode: string): EditionCandi
   if (response.code !== 'OK' || !('items' in response) || !Array.isArray(response.items)) throw new UpcError('response');
   if (!response.items.length) return null;
   const products = response.items.filter((item): item is UpcProduct => item !== null && typeof item === 'object' && !Array.isArray(item));
-  if (!products.length) throw new UpcError('response');
+  if (!products.length) return null;
   const aliases = barcodeAliases(barcode);
   const match = products.find((item) => aliases.includes(text(item.ean) ?? '') || aliases.includes(text(item.upc) ?? ''));
   // Single-code lookup can omit ean/upc; accept one incomplete product, never a
   // different advertised barcode or an arbitrary product from a bulk result.
   const only = products.length === 1 && !text(products[0].ean) && !text(products[0].upc) ? products[0] : null;
-  if (!match && !only) throw new UpcError('response');
-  return mapUpcProduct(match ?? only!, barcode);
+  if (!match && !only) return null;
+  const candidate = mapUpcProduct(match ?? only!, barcode);
+  return candidate.title ? candidate : null;
 }

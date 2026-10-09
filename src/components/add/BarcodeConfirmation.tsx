@@ -18,6 +18,7 @@ import { EditionConflictError } from '../../services/barcode/mappers';
 import { editionCover } from '../../services/collection/mappers';
 import { inferMediaFormat } from '../../utils/barcode';
 import { packagingLabels } from '../../utils/collectionDetails';
+import type { BarcodeWebCandidate } from '../../types/barcodeWeb';
 import type { EditionCandidate, KnownEdition } from '../../types/barcode';
 import type { MovieDetails } from '../../types/movieSearch';
 import type { ItemCondition, MediaFormat, PackagingType } from '../../services/supabase/types';
@@ -25,9 +26,7 @@ import { buildEditionCoverQuery } from '../../services/covers';
 import { EditionCoverPicker } from '../covers/EditionCoverPicker';
 import { colors, spacing } from '../../theme';
 
-import type { BarcodeWebCandidate } from '../../types/barcodeWeb';
-
-type Props = { webCandidate?: BarcodeWebCandidate; barcode: string; onBusyChange?: (busy: boolean) => void } & (
+type Props = { webCandidate?: BarcodeWebCandidate | null; barcode: string; onBusyChange?: (busy: boolean) => void } & (
   | { knownEdition: KnownEdition; movie?: never; candidate?: never }
   | { knownEdition?: never; movie: MovieDetails; candidate: EditionCandidate | null }
 );

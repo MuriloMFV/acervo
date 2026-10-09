@@ -1,7 +1,7 @@
 import { authenticate, failure, json, preflight, requestBody } from '../_shared/http.ts';
-import { readLimited } from '../_shared/covers.ts';
+import { searchSerpApi, SerpApiError } from '../_shared/serpapi.ts';
 import { validatedBarcode } from '../../../src/utils/barcode.ts';
-import { barcodeWebQuery, normalizeBarcodeWebResults } from '../../../src/services/barcode/webParsing.ts';
+import { lookupBarcodeWebCandidates } from '../_shared/barcodeWeb.ts';
 Deno.serve(async req => {
   const early = preflight(req); if (early) return early;
   try {
@@ -11,13 +11,11 @@ Deno.serve(async req => {
     const barcode = validatedBarcode(body.barcode);
     const key = Deno.env.get('SERPAPI_API_KEY');
     if (!key) return json({ error:'Busca web ainda não configurada' },503);
-    const url = new URL('https://serpapi.com/search');
-    url.search = new URLSearchParams({engine:'google',q:barcodeWebQuery(barcode),hl:'pt',gl:'br',api_key:key}).toString();
-    const response = await fetch(url,{redirect:'error',signal:AbortSignal.timeout(15000)});
-    if (!response.ok) { await response.body?.cancel(); return json({error:'Busca web indisponível'},response.status === 429 ? 429 : 502); }
-    const data = JSON.parse(new TextDecoder().decode(await readLimited(response,2*1024*1024)));
-    const candidates = normalizeBarcodeWebResults(data,barcode);
-    console.info(JSON.stringify({stage:'serpapi',status:200,candidates:candidates.length}));
+    const candidates = await lookupBarcodeWebCandidates(barcode, (engine,query) => searchSerpApi(engine,query,key));
     return json({barcode,candidates});
-  } catch(error) { return failure(error); }
+  } catch (error) {
+    if (error instanceof SerpApiError) return json({error:error.message,code:error.kind},error.status);
+    console.info(JSON.stringify({stage:'barcode-lookup',kind:error instanceof Error && error.message === 'UNAUTHORIZED' ? 'auth' : 'invalid-response-or-input'}));
+    return failure(error);
+  }
 });

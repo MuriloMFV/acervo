@@ -17,7 +17,7 @@ export type BarcodeLookupResult =
   | { source: 'SUPABASE'; barcode: string; edition: KnownEdition }
   | { source: 'UPCITEMDB'; barcode: string; candidate: EditionCandidate }
   | { source: 'WEB'; barcode: string; candidates: BarcodeWebCandidate[] }
-  | { source: 'NOT_FOUND'; barcode: string };
+  | { source: 'NOT_FOUND'; barcode: string; webUnavailable?: boolean; webFailure?: import('../services/barcode/webErrors').BarcodeWebFailure };
 export interface BarcodeEditionDraft {
   mediaFormat: MediaFormat;
   packagingType: PackagingType;
