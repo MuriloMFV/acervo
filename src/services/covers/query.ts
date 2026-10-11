@@ -4,3 +4,8 @@ const formats = { DVD: 'DVD', BLURAY: 'Blu-ray', UHD_4K: '4K UHD', VHS: 'VHS' };
 export function buildEditionCoverQuery(params: CoverSearchParams): string {
   return [params.barcode ? normalizeBarcode(params.barcode) : '', params.title, formats[params.mediaFormat], params.editionName, params.publisher, params.country, params.region ? `região ${params.region}` : '', 'capa'].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim().slice(0,240);
 }
+export function buildEditionBackCoverQuery(params: CoverSearchParams): string {
+  const base = buildEditionCoverQuery(params).replace(/\s+capa$/, '');
+  const suffix = ' contracapa';
+  return `${base.slice(0, 240 - suffix.length).trim()}${suffix}`;
+}

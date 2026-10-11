@@ -5,6 +5,7 @@ import { ActivityIndicator, Image, ScrollView, StyleSheet, View } from 'react-na
 import ArrowLeft from 'lucide-react-native/icons/arrow-left';
 import { AppText, Chip, IconButton, Screen } from '../../src/components/ui';
 import { EditionCoverPicker } from '../../src/components/covers/EditionCoverPicker';
+import { EditionBackCoverField } from '../../src/components/covers/EditionBackCoverField';
 import { buildEditionCoverQuery } from '../../src/services/covers';
 import { FormField } from '../../src/components/ui/FormField';
 import { ActionButton } from '../../src/components/ui/ActionButton';
@@ -32,6 +33,8 @@ export default function SelectedMovieScreen() {
   const [format, setFormat] = useState<MediaFormat>('DVD');
   const [condition, setCondition] = useState<ItemCondition>('GOOD');
   const [customCoverUrl, setCustomCoverUrl] = useState<string | null>(null);
+  const [backCoverUrl, setBackCoverUrl] = useState<string | null>(null);
+  const [backCoverBusy, setBackCoverBusy] = useState(false);
   const [coverPickerOpen, setCoverPickerOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [editionName, setEditionName] = useState('');
@@ -42,7 +45,7 @@ export default function SelectedMovieScreen() {
   const save = useMutation({
     mutationFn: () => {
       if (!movie.data || !session) throw new Error('Filme ou sessão indisponível');
-      return createCollectionItem(movie.data, format, condition, { customCoverUrl, editionName, publisher, region, country });
+      return createCollectionItem(movie.data, format, condition, { customCoverUrl, backCoverUrl, editionName, publisher, region, country });
     },
     onSuccess: async (item) => {
       await cache.invalidateQueries({ queryKey: queryKeys.collection(session!.user.id) });
@@ -51,7 +54,7 @@ export default function SelectedMovieScreen() {
     },
   });
   const submit = async () => {
-    if (saving.current) return;
+    if (saving.current || backCoverBusy) return;
     saving.current = true;
     try { await save.mutateAsync(); } catch { /* The mutation error is shown below. */ }
     finally { saving.current = false; }
@@ -61,7 +64,7 @@ export default function SelectedMovieScreen() {
   return (
     <Screen>
       <View style={styles.header}>
-        <IconButton accessibilityLabel="Voltar à busca" onPress={goBack} disabled={save.isPending}><ArrowLeft size={controls.iconSize} color={colors.textSecondary} /></IconButton>
+        <IconButton accessibilityLabel="Voltar à busca" onPress={goBack} disabled={save.isPending || backCoverBusy}><ArrowLeft size={controls.iconSize} color={colors.textSecondary} /></IconButton>
       </View>
       <ScrollView contentContainerStyle={styles.content}>
         {validId && movie.isPending && <ActivityIndicator accessibilityLabel="Carregando filme" color={colors.accent} />}
@@ -88,9 +91,10 @@ export default function SelectedMovieScreen() {
           <ActionButton secondary label="Buscar capa" disabled={save.isPending} onPress={() => setCoverPickerOpen(true)} />
           {customCoverUrl && <ActionButton secondary label="Usar poster do TMDB" disabled={save.isPending} onPress={() => setCustomCoverUrl(null)} />}
           {coverPickerOpen && <EditionCoverPicker title={movie.data.title} initialQuery={buildEditionCoverQuery({ title: movie.data.title, mediaFormat: format, editionName, publisher, region, country })} onClose={() => setCoverPickerOpen(false)} onSelect={(url) => { setCustomCoverUrl(url); setCoverPickerOpen(false); }} />}
+          <EditionBackCoverField value={backCoverUrl} onChange={setBackCoverUrl} onBusyChange={setBackCoverBusy} search={{ title: movie.data.title, mediaFormat: format, editionName, publisher, region, country }} disabled={save.isPending} />
           <ConditionSelector value={condition} onChange={setCondition} disabled={save.isPending} />
           {save.isError && <AppText accessibilityRole="alert" color="textMuted">Não foi possível adicionar ao Acervo. Tente novamente.</AppText>}
-          <ActionButton label="Adicionar ao Acervo" busy={save.isPending} onPress={() => { void submit(); }} />
+          <ActionButton label="Adicionar ao Acervo" busy={save.isPending} disabled={backCoverBusy} onPress={() => { void submit(); }} />
         </>}
       </ScrollView>
     </Screen>

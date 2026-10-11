@@ -7,6 +7,8 @@ import { ActionButton } from '../../src/components/ui/ActionButton';
 import { FormField } from '../../src/components/ui/FormField';
 import { EditionImage } from '../../src/components/add/EditionImage';
 import { EditionCoverPicker } from '../../src/components/covers/EditionCoverPicker';
+import { EditionBackCoverField } from '../../src/components/covers/EditionBackCoverField';
+import { EditionCoverPhotoButton } from '../../src/components/covers/EditionCoverPhotoButton';
 import { useCollectionItem } from '../../src/hooks/useCollection';
 import { useSession } from '../../src/contexts/SessionContext';
 import { useSuccessFeedback } from '../../src/components/visual/SuccessFeedback';
@@ -32,8 +34,12 @@ function EditionForm({ item, onBack }: { item: CollectionRecord; onBack: () => v
   const { session } = useSession();
   const cache = useQueryClient();
   const showSuccess = useSuccessFeedback();
-  const [values, setValues] = useState({ editionName: edition.edition_name ?? '', publisher: edition.publisher ?? '', country: edition.country ?? '', region: edition.region ?? '', discCount: edition.disc_count?.toString() ?? '', customCoverUrl: edition.custom_cover_url });
+  const [values, setValues] = useState({ editionName: edition.edition_name ?? '', publisher: edition.publisher ?? '', country: edition.country ?? '', region: edition.region ?? '', discCount: edition.disc_count?.toString() ?? '', customCoverUrl: edition.custom_cover_url, backCoverUrl: edition.back_cover_url ?? null });
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [backCoverBusy, setBackCoverBusy] = useState(false);
+  const [frontCoverBusy, setFrontCoverBusy] = useState(false);
+  const coverBusy = frontCoverBusy || backCoverBusy;
+  const frontCover = values.customCoverUrl ?? edition.product_image_url ?? edition.movie.poster_url;
   const [error, setError] = useState('');
   const save = useMutation({
     mutationFn: (fields: ReturnType<typeof parseEditionForm>) => editCollectionEdition(item.id, edition.id, fields),
@@ -44,7 +50,7 @@ function EditionForm({ item, onBack }: { item: CollectionRecord; onBack: () => v
   });
   const field = (key: 'editionName' | 'publisher' | 'country' | 'region' | 'discCount') => (text: string) => setValues(previous => ({ ...previous, [key]: text }));
   const submit = () => {
-    if (save.isPending) return;
+    if (save.isPending || coverBusy) return;
     setError('');
     try { save.mutate(parseEditionForm(values)); } catch (cause) { setError(cause instanceof Error ? cause.message : 'Confira os dados.'); }
   };
@@ -52,19 +58,21 @@ function EditionForm({ item, onBack }: { item: CollectionRecord; onBack: () => v
     <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
       <AppText variant="heading">Editar edição</AppText>
       <AppText color="textMuted">{edition.movie.title}</AppText>
-      <EditionImage uri={values.customCoverUrl ?? edition.product_image_url ?? edition.movie.poster_url} label="Capa da edição" />
+      <EditionImage key={frontCover} uri={frontCover} label="Capa da edição" />
       <View style={styles.form}>
-        <ActionButton secondary label="Buscar nova capa" disabled={save.isPending} onPress={() => setPickerOpen(true)} />
-        {values.customCoverUrl && <ActionButton secondary label="Usar capa padrão" disabled={save.isPending} onPress={() => setValues(previous => ({ ...previous, customCoverUrl: null }))} />}
+        <ActionButton secondary label="Buscar nova capa" disabled={save.isPending || coverBusy} onPress={() => setPickerOpen(true)} />
+        <EditionCoverPhotoButton side="front" value={values.customCoverUrl} label="Usar minha foto como capa" disabled={save.isPending || backCoverBusy} onBusyChange={setFrontCoverBusy} onSelect={url => setValues(previous => ({ ...previous, customCoverUrl: url }))} />
+        {values.customCoverUrl && <ActionButton secondary label="Usar capa padrão" disabled={save.isPending || coverBusy} onPress={() => setValues(previous => ({ ...previous, customCoverUrl: null }))} />}
       </View>
+      <EditionBackCoverField value={values.backCoverUrl} onChange={url => setValues(previous => ({ ...previous, backCoverUrl: url }))} onBusyChange={setBackCoverBusy} search={{ title: edition.movie.title, mediaFormat: edition.media_format, barcode: edition.barcode ?? undefined, editionName: values.editionName, publisher: values.publisher, country: values.country, region: values.region }} disabled={save.isPending || frontCoverBusy} />
       <FormField label="Nome da edição" value={values.editionName} onChangeText={field('editionName')} editable={!save.isPending} maxLength={200} />
       <FormField label="País" value={values.country} onChangeText={field('country')} editable={!save.isPending} maxLength={200} />
       <FormField label="Distribuidora" value={values.publisher} onChangeText={field('publisher')} editable={!save.isPending} maxLength={200} />
       <FormField label="Quantidade de discos" value={values.discCount} onChangeText={field('discCount')} keyboardType="number-pad" editable={!save.isPending} />
       <FormField label="Região / codificação" value={values.region} onChangeText={field('region')} editable={!save.isPending} maxLength={200} />
       {(error || save.isError) && <AppText accessibilityRole="alert" color="textMuted">{error || save.error?.message}</AppText>}
-      <ActionButton label="Salvar edição" busy={save.isPending} onPress={submit} />
-      <ActionButton secondary label="Cancelar" disabled={save.isPending} onPress={onBack} />
+      <ActionButton label="Salvar edição" busy={save.isPending} disabled={coverBusy} onPress={submit} />
+      <ActionButton secondary label="Cancelar" disabled={save.isPending || coverBusy} onPress={onBack} />
       {pickerOpen && <EditionCoverPicker title={edition.movie.title} initialQuery={buildEditionCoverQuery({ title: edition.movie.title, mediaFormat: edition.media_format, barcode: edition.barcode ?? undefined, editionName: values.editionName, publisher: values.publisher, country: values.country, region: values.region })} onClose={() => setPickerOpen(false)} onSelect={url => { setValues(previous => ({ ...previous, customCoverUrl: url })); setPickerOpen(false); }} />}
     </ScrollView>
   </KeyboardAvoidingView>;

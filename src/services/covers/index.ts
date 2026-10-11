@@ -1,6 +1,6 @@
 import { getSupabaseClient } from '../supabase/client';
 import type { EditionCoverCandidate } from '../../types/covers';
-export { buildEditionCoverQuery } from './query';
+export { buildEditionCoverQuery, buildEditionBackCoverQuery } from './query';
 async function invoke(name: string, body: Record<string, unknown>) {
   const client = getSupabaseClient();
   const { data: auth, error: authError } = await client.auth.getSession();

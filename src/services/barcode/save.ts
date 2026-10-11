@@ -7,6 +7,7 @@ import type { ItemCondition } from '../supabase/types';
 import type { BarcodeEditionDraft } from '../../types/barcode';
 import type { MovieForCollection } from '../collection/types';
 import { assertSelectedCoverCompatible, assertCompatibleEdition, barcodeEditionPayload, coverCorrectionNote } from './mappers';
+import { storedEditionCover } from '../covers/storage';
 
 export async function addKnownBarcodeEdition(editionId: string, condition: ItemCondition, coverCorrection: boolean) {
   const userId = await authenticatedUserId();
@@ -18,11 +19,12 @@ export async function addKnownBarcodeEdition(editionId: string, condition: ItemC
 export async function addNewBarcodeEdition(code: string, movie: MovieForCollection, draft: BarcodeEditionDraft, condition: ItemCondition, coverRejected = false) {
   const userId = await authenticatedUserId();
   const barcode = validatedBarcode(code);
+  const backCoverUrl = storedEditionCover(draft.backCoverUrl, getSupabaseClient().storage.from('edition-covers').getPublicUrl('').data.publicUrl);
   // Never overwrite shared catalog metadata. A matching existing edition wins.
   let existing = await findEditionByBarcode(barcode);
   if (existing) {
     assertCompatibleEdition(existing, movie.id, draft.mediaFormat);
-    assertSelectedCoverCompatible(existing, draft.customCoverUrl);
+    assertSelectedCoverCompatible(existing, draft.customCoverUrl, backCoverUrl);
     return createCollectionCopy(existing.id, condition, userId, coverRejected && existing.product_image_url ? coverCorrectionNote : null);
   }
   const savedMovie = await findOrCreateMovie(movie);
@@ -30,11 +32,11 @@ export async function addNewBarcodeEdition(code: string, movie: MovieForCollecti
   existing = await findEditionByBarcode(barcode);
   if (existing) {
     assertCompatibleEdition(existing, movie.id, draft.mediaFormat);
-    assertSelectedCoverCompatible(existing, draft.customCoverUrl);
+    assertSelectedCoverCompatible(existing, draft.customCoverUrl, backCoverUrl);
     return createCollectionCopy(existing.id, condition, userId, coverRejected && existing.product_image_url ? coverCorrectionNote : null);
   }
   if (await authenticatedUserId() !== userId) throw new Error('Sessão alterada.');
-  const { data, error } = await getSupabaseClient().from('editions').insert(barcodeEditionPayload(savedMovie.id, barcode, draft)).select('id').single();
+  const { data, error } = await getSupabaseClient().from('editions').insert(barcodeEditionPayload(savedMovie.id, barcode, { ...draft, backCoverUrl })).select('id').single();
   if (error) throw error;
   return createCollectionCopy(data.id, condition, userId);
 }

@@ -1,12 +1,10 @@
-import { File } from 'expo-file-system';
 import { randomUUID } from 'expo-crypto';
 import { getSupabaseClient } from '../supabase/client';
-import { copyPhotoPath, COPY_PHOTOS_BUCKET, isOwnCopyPhoto, MAX_PHOTO_BYTES, SIGNED_PHOTO_SECONDS, validatePhotoBytes, type PreparedCopyPhoto } from './validation';
+import { copyPhotoPath, COPY_PHOTOS_BUCKET, isOwnCopyPhoto, SIGNED_PHOTO_SECONDS, validatePhotoBytes, type PreparedCopyPhoto } from './validation';
+import { readPhotoFile } from './file';
 
 export async function uploadCopyPhoto(userId: string, itemId: string, photo: PreparedCopyPhoto): Promise<string> {
-  const file = new File(photo.uri);
-  if (!file.exists || file.size <= 0 || file.size > MAX_PHOTO_BYTES) throw new Error('A foto deve ter até 5 MB.');
-  const buffer = await file.arrayBuffer();
+  const buffer = await readPhotoFile(photo.uri);
   const mime = validatePhotoBytes(new Uint8Array(buffer), photo.mime);
   const path = copyPhotoPath(userId, itemId, randomUUID(), mime);
   const { error } = await getSupabaseClient().storage.from(COPY_PHOTOS_BUCKET).upload(path, buffer, { contentType: mime, upsert: false });

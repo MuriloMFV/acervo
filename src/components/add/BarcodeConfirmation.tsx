@@ -24,6 +24,7 @@ import type { MovieDetails } from '../../types/movieSearch';
 import type { ItemCondition, MediaFormat, PackagingType } from '../../services/supabase/types';
 import { buildEditionCoverQuery } from '../../services/covers';
 import { EditionCoverPicker } from '../covers/EditionCoverPicker';
+import { EditionBackCoverField } from '../covers/EditionBackCoverField';
 import { colors, spacing } from '../../theme';
 
 type Props = { webCandidate?: BarcodeWebCandidate | null; barcode: string; onBusyChange?: (busy: boolean) => void } & (
@@ -40,6 +41,8 @@ export function BarcodeConfirmation({ barcode, knownEdition, movie, candidate, w
   const [condition, setCondition] = useState<ItemCondition | null>(null);
   const [coverRejected, setCoverRejected] = useState(false);
   const [customCoverUrl, setCustomCoverUrl] = useState<string | null>(null);
+  const [backCoverUrl, setBackCoverUrl] = useState<string | null>(null);
+  const [backCoverBusy, setBackCoverBusy] = useState(false);
   const [coverPickerOpen, setCoverPickerOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [publisher, setPublisher] = useState(webCandidate?.detectedPublisher ?? '');
@@ -58,7 +61,7 @@ export function BarcodeConfirmation({ barcode, knownEdition, movie, candidate, w
     mutationFn: async () => {
       if (!condition || !format || !session) throw new Error('Confirme formato e condição.');
       if (knownEdition) return addKnownBarcodeEdition(knownEdition.id, condition, coverRejected);
-      return addNewBarcodeEdition(barcode, movie!, { mediaFormat: format, packagingType: packaging, publisher, region, country, editionName, customCoverUrl, productImageUrl: coverRejected ? null : candidate?.primaryImageUrl ?? null, isSpecialEdition: special, isLimitedEdition: limited }, condition, coverRejected);
+      return addNewBarcodeEdition(barcode, movie!, { mediaFormat: format, packagingType: packaging, publisher, region, country, editionName, customCoverUrl, backCoverUrl, productImageUrl: coverRejected ? null : candidate?.primaryImageUrl ?? null, isSpecialEdition: special, isLimitedEdition: limited }, condition, coverRejected);
     },
     onSuccess: async (item) => {
       await cache.invalidateQueries({ queryKey: queryKeys.barcodes(session!.user.id), refetchType: 'none' });
@@ -68,11 +71,11 @@ export function BarcodeConfirmation({ barcode, knownEdition, movie, candidate, w
     },
   });
   useEffect(() => {
-    onBusyChange?.(save.isPending);
+    onBusyChange?.(save.isPending || backCoverBusy);
     return () => onBusyChange?.(false);
-  }, [save.isPending, onBusyChange]);
+  }, [save.isPending, backCoverBusy, onBusyChange]);
   const submit = async () => {
-    if (saving.current) return;
+    if (saving.current || backCoverBusy) return;
     saving.current = true;
     try { await save.mutateAsync(); } catch { /* Mutation error is rendered below. */ }
     finally { saving.current = false; }
@@ -88,6 +91,7 @@ export function BarcodeConfirmation({ barcode, knownEdition, movie, candidate, w
       <ActionButton secondary label="Usar poster do TMDB" disabled={save.isPending} onPress={() => { setCustomCoverUrl(null); setCoverRejected(true); }} />
     </>}
     {coverPickerOpen && format && !knownEdition && <EditionCoverPicker title={title} initialQuery={buildEditionCoverQuery({ title, mediaFormat: format, barcode, editionName, publisher, region, country })} onClose={() => setCoverPickerOpen(false)} onSelect={(url) => { setCustomCoverUrl(url); setCoverRejected(false); setCoverPickerOpen(false); }} />}
+    {!knownEdition && format && <EditionBackCoverField value={backCoverUrl} onChange={setBackCoverUrl} onBusyChange={setBackCoverBusy} search={{ title, mediaFormat: format, barcode, editionName, publisher, region, country }} disabled={save.isPending} />}
     <AppText variant="title">{title}</AppText>
     {originalTitle && originalTitle !== title && <AppText variant="originalTitle" color="textSecondary">{originalTitle}</AppText>}
     <AppText color="textMuted">{year ?? '—'}</AppText>
@@ -119,7 +123,7 @@ export function BarcodeConfirmation({ barcode, knownEdition, movie, candidate, w
     <ConditionSelector value={condition} onChange={setCondition} disabled={save.isPending} />
     {save.isError && <AppText accessibilityRole="alert" color="textMuted">{save.error instanceof EditionConflictError ? save.error.message : 'Não foi possível adicionar ao Acervo. Tente novamente.'}</AppText>}
     {save.error instanceof EditionConflictError && <ActionButton secondary label="Consultar edição" onPress={() => { void cache.invalidateQueries({ queryKey: queryKeys.barcode(session!.user.id, barcode) }).then(() => router.dismissTo('/add/barcode')); }} />}
-    <ActionButton label="Adicionar ao Acervo" disabled={!condition || !format} busy={save.isPending} onPress={() => { void submit(); }} />
+    <ActionButton label="Adicionar ao Acervo" disabled={!condition || !format || backCoverBusy} busy={save.isPending} onPress={() => { void submit(); }} />
   </View>;
 }
 const styles = StyleSheet.create({ editionLabel: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm }, content: { gap: spacing.md }, choices: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm } });

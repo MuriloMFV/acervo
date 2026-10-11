@@ -18,6 +18,7 @@ export interface MovieDetailsPreview {
 }
 
 export interface EditionDetailsPreview {
+  backCover?: ImageSourcePropType | null;
   mediaFormat: MediaFormat;
   region: string | null;
   country: string | null;

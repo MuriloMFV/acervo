@@ -27,6 +27,7 @@ export interface BarcodeEditionDraft {
   editionName: string;
   productImageUrl: string | null;
   customCoverUrl?: string | null;
+  backCoverUrl?: string | null;
   isSpecialEdition: boolean;
   isLimitedEdition: boolean;
 }

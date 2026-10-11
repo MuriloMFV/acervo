@@ -5,6 +5,7 @@ import type { EditionEdit } from './editionEditing';
 import type { PhotoDraft } from '../photos/validation';
 import { uploadCopyPhoto, removeCopyPhoto } from '../photos';
 import { saveCopyPhoto } from '../photos/lifecycle';
+import { storedEditionCover } from '../covers/storage';
 
 export async function saveCopyChanges(itemId: string, payload: CopyUpdate, previousPhoto: string | null, draft: PhotoDraft) {
   const userId = await authenticatedUserId();
@@ -29,6 +30,7 @@ export async function editCollectionEdition(itemId: string, expectedEditionId: s
   await authenticatedUserId();
   const client = getSupabaseClient();
   if (fields.custom_cover_url && !fields.custom_cover_url.startsWith(client.storage.from('edition-covers').getPublicUrl('').data.publicUrl)) throw new Error('Escolha uma capa salva pelo Acervo.');
+  if (fields.back_cover_url) storedEditionCover(fields.back_cover_url, client.storage.from('edition-covers').getPublicUrl('').data.publicUrl);
   const { data, error } = await client.rpc('edit_collection_edition', { p_item_id: itemId, p_expected_edition_id: expectedEditionId, p_fields: fields });
   if (error) throw new Error(error.code === '40001' ? 'A edição mudou. Reabra os detalhes antes de salvar.' : 'Não foi possível salvar a edição.');
   return data;

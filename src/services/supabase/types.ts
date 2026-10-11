@@ -35,6 +35,7 @@ export type EditionRow = Timestamps & {
   edition_name: string | null;
   product_image_url: string | null;
   custom_cover_url: string | null;
+  back_cover_url: string | null;
   is_special_edition: boolean;
   is_limited_edition: boolean;
   disc_count: number | null;
@@ -93,7 +94,7 @@ export interface Database {
     Views: { [_ in never]: never };
     Functions: {
       create_collection_box: { Args: { p_expected_user_id: string; p_box: BoxSetInput; p_movie_ids: string[]; p_copy: BoxCopyInput }; Returns: string };
-      edit_collection_edition: { Args: { p_item_id: string; p_expected_edition_id: string; p_fields: { edition_name: string | null; publisher: string | null; country: string | null; region: string | null; disc_count: number | null; custom_cover_url: string | null } }; Returns: string }
+      edit_collection_edition: { Args: { p_item_id: string; p_expected_edition_id: string; p_fields: { edition_name: string | null; publisher: string | null; country: string | null; region: string | null; disc_count: number | null; custom_cover_url: string | null; back_cover_url?: string | null } }; Returns: string }
     };
     Enums: { media_format: MediaFormat; packaging_type: PackagingType; item_condition: ItemCondition };
     CompositeTypes: { [_ in never]: never };
