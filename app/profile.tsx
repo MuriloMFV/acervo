@@ -31,7 +31,7 @@ export default function ProfileScreen() {
     exportLock.current = true;
     setExporting(true);
     try { await exportCollectionPdf(session.user.id); }
-    catch { Alert.alert('Exportar Acervo', 'Não foi possível gerar ou compartilhar o PDF. Verifique sua conexão e tente novamente.'); }
+    catch { Alert.alert('Exportar Acervo', 'Não foi possível gerar ou compartilhar o PDF. Tente novamente.'); }
     finally { exportLock.current = false; setExporting(false); }
   };
   const { applyShortcut } = useCollectionFilters();

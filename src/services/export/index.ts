@@ -9,6 +9,7 @@ import { signedCopyPhotoCovers } from '../photos';
 import { photoCoverRequests, withPhotoCover } from '../photos/covers';
 import { fontAssets, fontFamilies } from '../../theme/fonts';
 import { buildCollectionDocument, exportItems } from './document';
+import { saveCollectionPdf } from './pdf';
 
 async function localAsset(module: number): Promise<string> {
   const asset = await Asset.fromModule(module).downloadAsync();
@@ -89,9 +90,8 @@ export async function exportCollectionPdf(expectedUserId: string): Promise<void>
       titleFont: await new File(titleUri).base64(), covers,
     });
     if (await authenticatedUserId() !== expectedUserId) throw new Error('Sessão alterada.');
-    const result = await Print.printToFileAsync({ html, width: 595, height: 842 });
     pdf = new File(Paths.cache, `Acervo-${date.toISOString().slice(0, 10)}-${date.getTime()}.pdf`);
-    new File(result.uri).move(pdf);
+    await saveCollectionPdf(html, pdf, Print.printToFileAsync);
     if (await authenticatedUserId() !== expectedUserId) throw new Error('Sessão alterada.');
     await Sharing.shareAsync(pdf.uri, { mimeType: 'application/pdf', UTI: 'com.adobe.pdf', dialogTitle: 'Exportar Acervo' });
   } catch (error) {
