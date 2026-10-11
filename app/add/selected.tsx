@@ -12,6 +12,7 @@ import { ActionButton } from '../../src/components/ui/ActionButton';
 import { ConditionSelector } from '../../src/components/collection/ConditionSelector';
 import { PackagingSelector } from '../../src/components/collection/PackagingSelector';
 import { CountrySelector } from '../../src/components/ui/CountrySelector';
+import { DistributorSelector } from '../../src/components/ui/DistributorSelector';
 import { RegionSelector } from '../../src/components/ui/RegionSelector';
 import { useSession } from '../../src/contexts/SessionContext';
 import { queryKeys } from '../../src/lib/queryClient';
@@ -90,7 +91,7 @@ export default function SelectedMovieScreen() {
           <ActionButton secondary label={detailsOpen ? 'Menos detalhes' : 'Mais detalhes'} disabled={save.isPending} onPress={() => setDetailsOpen(value => !value)} />
           {detailsOpen && <>
             <FormField label="Nome da edição" value={editionName} onChangeText={setEditionName} editable={!save.isPending} />
-            <FormField label="Distribuidora" value={publisher} onChangeText={setPublisher} editable={!save.isPending} />
+            <DistributorSelector value={publisher} onChange={setPublisher} disabled={save.isPending} />
             <RegionSelector value={region} videoStandard={videoStandard} mediaFormat={format} onChange={selection => { setRegion(selection.region); setVideoStandard(selection.videoStandard); }} disabled={save.isPending} />
             <CountrySelector value={country} onChange={setCountry} disabled={save.isPending} />
             <PackagingSelector value={packagingType} onChange={setPackagingType} disabled={save.isPending} />

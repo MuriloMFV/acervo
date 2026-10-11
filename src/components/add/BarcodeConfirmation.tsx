@@ -8,6 +8,8 @@ import { ActionButton } from '../ui/ActionButton';
 import { ConditionSelector } from '../collection/ConditionSelector';
 import { PackagingSelector } from '../collection/PackagingSelector';
 import { CountrySelector } from '../ui/CountrySelector';
+import { DistributorSelector } from '../ui/DistributorSelector';
+import { DistributorDisplay } from '../ui/DistributorDisplay';
 import { RegionSelector } from '../ui/RegionSelector';
 import { CountryDisplay } from '../ui/CountryDisplay';
 import { VideoStandardDisplay } from '../ui/VideoStandardDisplay';
@@ -111,7 +113,7 @@ export function BarcodeConfirmation({ barcode, knownEdition, movie, candidate, w
       {knownEdition.edition_name && <AppText color="textSecondary">{knownEdition.edition_name}</AppText>}
       {knownRegionEncoding?.region && <AppText color="textSecondary">Região: {knownRegionEncoding.region}</AppText>}
       {knownRegionEncoding?.videoStandard && <View style={styles.editionLabel}><AppText color="textSecondary">Codificação:</AppText><VideoStandardDisplay value={knownRegionEncoding.videoStandard} /></View>}
-      {knownEdition.publisher && <AppText color="textSecondary">Distribuidora: {knownEdition.publisher}</AppText>}
+      {knownEdition.publisher && <View style={styles.editionLabel}><AppText color="textSecondary">Distribuidora:</AppText><DistributorDisplay value={knownEdition.publisher} /></View>}
       {knownEdition.country && <View style={styles.editionLabel}><AppText color="textSecondary">País:</AppText><CountryDisplay value={knownEdition.country} /></View>}
       <AppText color="textSecondary">Tipo de capa: {packagingLabels[knownEdition.packaging_type]}</AppText>
       {knownEdition.is_special_edition && <View style={styles.editionLabel}><AssetIcon name="limited-edition" /><AppText variant="caption">Edição especial</AppText></View>}
@@ -122,7 +124,7 @@ export function BarcodeConfirmation({ barcode, knownEdition, movie, candidate, w
       <ActionButton secondary label={detailsOpen ? 'Menos detalhes' : 'Mais detalhes'} disabled={save.isPending} onPress={() => setDetailsOpen((value) => !value)} />
       {detailsOpen && <View style={styles.content}>
         <FormField label="Nome da edição" value={editionName} onChangeText={setEditionName} editable={!save.isPending} />
-        <FormField label="Distribuidora" value={publisher} onChangeText={setPublisher} editable={!save.isPending} />
+        <DistributorSelector value={publisher} onChange={setPublisher} disabled={save.isPending} />
         <RegionSelector value={region} videoStandard={videoStandard} mediaFormat={format} onChange={selection => { setRegion(selection.region); setVideoStandard(selection.videoStandard); }} disabled={save.isPending} />
         <CountrySelector value={country} onChange={setCountry} disabled={save.isPending} />
         <PackagingSelector value={packaging} onChange={setPackaging} disabled={save.isPending} />

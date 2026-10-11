@@ -6,6 +6,7 @@ import { AppText, Screen } from '../../src/components/ui';
 import { ActionButton } from '../../src/components/ui/ActionButton';
 import { FormField } from '../../src/components/ui/FormField';
 import { CountrySelector } from '../../src/components/ui/CountrySelector';
+import { DistributorSelector } from '../../src/components/ui/DistributorSelector';
 import { RegionSelector } from '../../src/components/ui/RegionSelector';
 import { PackagingSelector } from '../../src/components/collection/PackagingSelector';
 import { EditionImage } from '../../src/components/add/EditionImage';
@@ -71,7 +72,7 @@ function EditionForm({ item, onBack }: { item: CollectionRecord; onBack: () => v
       <FormField label="Nome da edição" value={values.editionName} onChangeText={field('editionName')} editable={!save.isPending} maxLength={200} />
       <CountrySelector value={values.country} onChange={field('country')} disabled={save.isPending} />
       <PackagingSelector value={values.packagingType} onChange={packagingType => setValues(previous => ({ ...previous, packagingType }))} disabled={save.isPending} />
-      <FormField label="Distribuidora" value={values.publisher} onChangeText={field('publisher')} editable={!save.isPending} maxLength={200} />
+      <DistributorSelector value={values.publisher} onChange={field('publisher')} disabled={save.isPending} />
       <FormField label="Quantidade de discos" value={values.discCount} onChangeText={field('discCount')} keyboardType="number-pad" editable={!save.isPending} />
       <RegionSelector value={values.region} videoStandard={values.videoStandard} mediaFormat={edition.media_format} onChange={selection => setValues(previous => ({ ...previous, ...selection }))} disabled={save.isPending} />
       {(error || save.isError) && <AppText accessibilityRole="alert" color="textMuted">{error || save.error?.message}</AppText>}

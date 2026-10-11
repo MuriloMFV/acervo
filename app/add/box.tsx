@@ -7,6 +7,7 @@ import X from 'lucide-react-native/icons/x';
 import { AppText, Chip, IconButton, Screen } from '../../src/components/ui';
 import { FormField } from '../../src/components/ui/FormField';
 import { CountrySelector } from '../../src/components/ui/CountrySelector';
+import { DistributorSelector } from '../../src/components/ui/DistributorSelector';
 import { RegionSelector } from '../../src/components/ui/RegionSelector';
 import { PurchaseDateField } from '../../src/components/ui/PurchaseDateField';
 import { ActionButton } from '../../src/components/ui/ActionButton';
@@ -76,7 +77,7 @@ export default function AddBoxScreen() {
         <ActionButton secondary label={extra?'Menos detalhes':'Detalhes opcionais'} disabled={save.isPending} onPress={()=>setExtra(value=>!value)} />
         {extra&&<>
           <FormField label="Nome da edição" value={form.editionName} maxLength={200} onChangeText={value=>change('editionName',value)} editable={!save.isPending} />
-          <FormField label="Distribuidora" value={form.publisher} maxLength={200} onChangeText={value=>change('publisher',value)} editable={!save.isPending} />
+          <DistributorSelector value={form.publisher} onChange={value=>change('publisher',value)} disabled={save.isPending} />
           <CountrySelector value={form.country} onChange={value=>change('country',value)} disabled={save.isPending} />
           <RegionSelector value={form.region} videoStandard={form.videoStandard ?? null} mediaFormat={form.mediaFormat} onChange={selection=>{setForm(current=>({...current,...selection}));setError('');}} disabled={save.isPending} />
           <View style={styles.selected}><AppText variant="label" style={styles.flex}>Edição especial</AppText><Switch accessibilityLabel="Edição especial" disabled={save.isPending} value={form.special} onValueChange={value=>change('special',value)} trackColor={{false:colors.border,true:colors.primary}} /></View>
