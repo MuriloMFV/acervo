@@ -1,6 +1,7 @@
 import type { BarcodeEditionDraft, KnownEdition } from '../../types/barcode';
 import type { Database, MediaFormat } from '../supabase/types';
 import { validatedBarcode } from '../../utils/barcode.ts';
+import { parseVideoStandard } from '../../utils/videoStandard.ts';
 
 export class EditionConflictError extends Error {
   constructor() { super('Uma edição foi cadastrada para este código. Consulte novamente para confirmar.'); this.name = 'EditionConflictError'; }
@@ -16,6 +17,7 @@ export function barcodeEditionPayload(movieId: string, code: string, draft: Barc
   return {
     movie_id: movieId, barcode: validatedBarcode(code), media_format: draft.mediaFormat, packaging_type: draft.packagingType,
     publisher: draft.publisher.trim() || null, region: draft.region.trim() || null, country: draft.country.trim() || null,
+    ...(draft.videoStandard === undefined ? {} : { video_standard: parseVideoStandard(draft.videoStandard) }),
     edition_name: draft.editionName.trim() || null, product_image_url: draft.productImageUrl, custom_cover_url: draft.customCoverUrl ?? null,
     ...(draft.backCoverUrl === undefined ? {} : { back_cover_url: draft.backCoverUrl?.trim() || null }),
     is_special_edition: draft.isSpecialEdition, is_limited_edition: draft.isLimitedEdition,

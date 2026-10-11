@@ -4,6 +4,7 @@ import type { BoxFormValues, CollectionBoxRecord } from './types';
 import { parseDiscCount } from '../collection/editionEditing.ts';
 import { parseCopyForm } from '../collection/mappers.ts';
 import { validatedBarcode } from '../../utils/barcode.ts';
+import { parseVideoStandard } from '../../utils/videoStandard.ts';
 
 export function parseBoxForm(form: BoxFormValues): { box: BoxSetInput; copy: BoxCopyInput } {
   const text = (value: string) => {
@@ -21,6 +22,7 @@ export function parseBoxForm(form: BoxFormValues): { box: BoxSetInput; copy: Box
     box: { name, media_format: form.mediaFormat, barcode: form.barcode.trim() ? validatedBarcode(form.barcode) : null,
       cover_url: cover || null, edition_name: text(form.editionName), publisher: text(form.publisher),
       country: text(form.country), region: text(form.region), disc_count: parseDiscCount(form.discCount),
+      ...(form.videoStandard === undefined ? {} : { video_standard: parseVideoStandard(form.videoStandard) }),
       is_special_edition: form.special, is_limited_edition: form.limited },
     copy: parseCopyForm({ condition: form.condition, price: form.price, date: form.date, place: form.place, notes: form.notes }),
   };

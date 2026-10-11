@@ -1,4 +1,5 @@
 import type { BarcodeWebCandidate } from './barcodeWeb';
+import type { VideoStandard } from './videoStandard';
 import type { EditionRow, MovieRow, MediaFormat, PackagingType } from '../services/supabase/types';
 
 export interface EditionCandidate {
@@ -23,6 +24,7 @@ export interface BarcodeEditionDraft {
   packagingType: PackagingType;
   publisher: string;
   region: string;
+  videoStandard?: VideoStandard | null;
   country: string;
   editionName: string;
   productImageUrl: string | null;

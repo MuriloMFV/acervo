@@ -4,6 +4,8 @@ import { AssetIcon, MediaFormatIcon } from '../visual/AssetIcon';
 import { AppText } from '../ui';
 import { ActionButton } from '../ui/ActionButton';
 import { CountryDisplay } from '../ui/CountryDisplay';
+import { VideoStandardDisplay } from '../ui/VideoStandardDisplay';
+import { regionEncodingDraft } from '../../utils/videoStandard';
 import { discCountLabel } from '../../services/collection/editionEditing';
 import { MediaFormatBadge } from '../movie';
 import { mediaFormatLabels } from '../movie/MediaFormatBadge';
@@ -13,12 +15,14 @@ import { conditionLabels, packagingLabels, formatPurchaseDate, formatPurchasePri
 
 export function EditionDetails({ item, special = false, limited = false, onEdit }: { item: CollectionItemDetailsPreview; special?: boolean; limited?: boolean; onEdit?: () => void }) {
   const { edition, copy } = item;
+  const regionEncoding = regionEncodingDraft(edition.region ?? '', edition.videoStandard);
   const discCount = edition.discCount ?? 0;
   // Keep very large box sets from creating an unbounded list of SVGs.
   const visibleDiscCount = Math.min(discCount, 32);
   const fields = [
     { label: 'Formato', value: mediaFormatLabels[edition.mediaFormat] },
-    { label: 'Região', value: edition.region ?? '—' },
+    { label: 'Região', value: regionEncoding.region || '—' },
+    { label: 'Codificação', value: regionEncoding.videoStandard ?? '—' },
     { label: 'País', value: edition.country ?? '—' },
     { label: 'Distribuidora', value: edition.publisher ?? '—' },
     { label: 'Código de barras', value: edition.barcode ?? '—' },
@@ -45,7 +49,7 @@ export function EditionDetails({ item, special = false, limited = false, onEdit 
         {fields.map((field) => (
           <View key={field.label} style={styles.cell} accessible={field.label === 'Formato' || field.label === 'Discos' || undefined} accessibilityLabel={field.label === 'Formato' || field.label === 'Discos' ? `${field.label}: ${field.value}` : undefined}>
             <AppText variant="caption" color="textMuted">{field.label.toLocaleUpperCase('pt-BR')}</AppText>
-            {field.label === 'Formato' ? <MediaFormatIcon format={edition.mediaFormat} color={colors.text} /> : field.label === 'País' ? <CountryDisplay value={edition.country} /> : field.label === 'Discos' ? (
+            {field.label === 'Formato' ? <MediaFormatIcon format={edition.mediaFormat} color={colors.text} /> : field.label === 'País' ? <CountryDisplay value={edition.country} /> : field.label === 'Codificação' ? <VideoStandardDisplay value={regionEncoding.videoStandard} /> : field.label === 'Discos' ? (
               <View style={styles.discs}>
                 {Array.from({ length: visibleDiscCount }, (_, index) => (
                   <Disc3 key={index} size={controls.iconSize} color={colors.text} accessible={false} />

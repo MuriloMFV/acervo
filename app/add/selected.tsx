@@ -12,11 +12,13 @@ import { ActionButton } from '../../src/components/ui/ActionButton';
 import { ConditionSelector } from '../../src/components/collection/ConditionSelector';
 import { PackagingSelector } from '../../src/components/collection/PackagingSelector';
 import { CountrySelector } from '../../src/components/ui/CountrySelector';
+import { RegionSelector } from '../../src/components/ui/RegionSelector';
 import { useSession } from '../../src/contexts/SessionContext';
 import { queryKeys } from '../../src/lib/queryClient';
 import { createCollectionItem } from '../../src/services/collection';
 import { getMovieDetails } from '../../src/services/tmdb';
 import type { MediaFormat, ItemCondition, PackagingType } from '../../src/services/supabase/types';
+import type { VideoStandard } from '../../src/types/videoStandard';
 import { MediaFormatIcon } from '../../src/components/visual/AssetIcon';
 import { useSuccessFeedback } from '../../src/components/visual/SuccessFeedback';
 import { mediaFormatLabels } from '../../src/components/movie/MediaFormatBadge';
@@ -42,13 +44,14 @@ export default function SelectedMovieScreen() {
   const [editionName, setEditionName] = useState('');
   const [publisher, setPublisher] = useState('');
   const [region, setRegion] = useState('');
+  const [videoStandard, setVideoStandard] = useState<VideoStandard | null>(null);
   const [country, setCountry] = useState('');
   const [packagingType, setPackagingType] = useState<PackagingType>('STANDARD');
   const saving = useRef(false);
   const save = useMutation({
     mutationFn: () => {
       if (!movie.data || !session) throw new Error('Filme ou sessão indisponível');
-      return createCollectionItem(movie.data, format, condition, { customCoverUrl, backCoverUrl, editionName, publisher, region, country, packagingType });
+      return createCollectionItem(movie.data, format, condition, { customCoverUrl, backCoverUrl, editionName, publisher, region, videoStandard, country, packagingType });
     },
     onSuccess: async (item) => {
       await cache.invalidateQueries({ queryKey: queryKeys.collection(session!.user.id) });
@@ -88,7 +91,7 @@ export default function SelectedMovieScreen() {
           {detailsOpen && <>
             <FormField label="Nome da edição" value={editionName} onChangeText={setEditionName} editable={!save.isPending} />
             <FormField label="Distribuidora" value={publisher} onChangeText={setPublisher} editable={!save.isPending} />
-            <FormField label="Região / codificação" value={region} onChangeText={setRegion} editable={!save.isPending} />
+            <RegionSelector value={region} videoStandard={videoStandard} mediaFormat={format} onChange={selection => { setRegion(selection.region); setVideoStandard(selection.videoStandard); }} disabled={save.isPending} />
             <CountrySelector value={country} onChange={setCountry} disabled={save.isPending} />
             <PackagingSelector value={packagingType} onChange={setPackagingType} disabled={save.isPending} />
           </>}

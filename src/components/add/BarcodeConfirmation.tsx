@@ -8,7 +8,11 @@ import { ActionButton } from '../ui/ActionButton';
 import { ConditionSelector } from '../collection/ConditionSelector';
 import { PackagingSelector } from '../collection/PackagingSelector';
 import { CountrySelector } from '../ui/CountrySelector';
+import { RegionSelector } from '../ui/RegionSelector';
 import { CountryDisplay } from '../ui/CountryDisplay';
+import { VideoStandardDisplay } from '../ui/VideoStandardDisplay';
+import type { VideoStandard } from '../../types/videoStandard';
+import { regionEncodingDraft } from '../../utils/videoStandard';
 import { MediaFormatIcon, AssetIcon } from '../visual/AssetIcon';
 import { useSuccessFeedback } from '../visual/SuccessFeedback';
 import { MediaFormatBadge } from '../movie/MediaFormatBadge';
@@ -50,6 +54,7 @@ export function BarcodeConfirmation({ barcode, knownEdition, movie, candidate, w
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [publisher, setPublisher] = useState(webCandidate?.detectedPublisher ?? '');
   const [region, setRegion] = useState(webCandidate?.detectedRegion ?? '');
+  const [videoStandard, setVideoStandard] = useState<VideoStandard | null>(null);
   const [country, setCountry] = useState(webCandidate?.detectedCountry ?? '');
   const [editionName, setEditionName] = useState(webCandidate?.detectedEditionName ?? candidate?.rawProductName ?? '');
   const [packaging, setPackaging] = useState<PackagingType>('STANDARD');
@@ -59,12 +64,13 @@ export function BarcodeConfirmation({ barcode, knownEdition, movie, candidate, w
   const title = knownEdition?.movie.title ?? movie!.title;
   const originalTitle = knownEdition?.movie.original_title ?? movie?.originalTitle;
   const year = knownEdition ? knownEdition.movie.release_year : movie!.year;
+  const knownRegionEncoding = knownEdition ? regionEncodingDraft(knownEdition.region ?? '', knownEdition.video_standard) : null;
   const image = customCoverUrl ?? (knownEdition ? editionCover(knownEdition) : coverRejected ? movie!.posterUrl : candidate?.primaryImageUrl ?? movie!.posterUrl);
   const save = useMutation({
     mutationFn: async () => {
       if (!condition || !format || !session) throw new Error('Confirme formato e condição.');
       if (knownEdition) return addKnownBarcodeEdition(knownEdition.id, condition, coverRejected);
-      return addNewBarcodeEdition(barcode, movie!, { mediaFormat: format, packagingType: packaging, publisher, region, country, editionName, customCoverUrl, backCoverUrl, productImageUrl: coverRejected ? null : candidate?.primaryImageUrl ?? null, isSpecialEdition: special, isLimitedEdition: limited }, condition, coverRejected);
+      return addNewBarcodeEdition(barcode, movie!, { mediaFormat: format, packagingType: packaging, publisher, region, videoStandard, country, editionName, customCoverUrl, backCoverUrl, productImageUrl: coverRejected ? null : candidate?.primaryImageUrl ?? null, isSpecialEdition: special, isLimitedEdition: limited }, condition, coverRejected);
     },
     onSuccess: async (item) => {
       await cache.invalidateQueries({ queryKey: queryKeys.barcodes(session!.user.id), refetchType: 'none' });
@@ -103,7 +109,8 @@ export function BarcodeConfirmation({ barcode, knownEdition, movie, candidate, w
     {knownEdition ? <View style={styles.content}>
       <AppText variant="heading">Minha edição</AppText><MediaFormatBadge mediaFormat={knownEdition.media_format} />
       {knownEdition.edition_name && <AppText color="textSecondary">{knownEdition.edition_name}</AppText>}
-      {knownEdition.region && <AppText color="textSecondary">Região: {knownEdition.region}</AppText>}
+      {knownRegionEncoding?.region && <AppText color="textSecondary">Região: {knownRegionEncoding.region}</AppText>}
+      {knownRegionEncoding?.videoStandard && <View style={styles.editionLabel}><AppText color="textSecondary">Codificação:</AppText><VideoStandardDisplay value={knownRegionEncoding.videoStandard} /></View>}
       {knownEdition.publisher && <AppText color="textSecondary">Distribuidora: {knownEdition.publisher}</AppText>}
       {knownEdition.country && <View style={styles.editionLabel}><AppText color="textSecondary">País:</AppText><CountryDisplay value={knownEdition.country} /></View>}
       <AppText color="textSecondary">Tipo de capa: {packagingLabels[knownEdition.packaging_type]}</AppText>
@@ -116,7 +123,7 @@ export function BarcodeConfirmation({ barcode, knownEdition, movie, candidate, w
       {detailsOpen && <View style={styles.content}>
         <FormField label="Nome da edição" value={editionName} onChangeText={setEditionName} editable={!save.isPending} />
         <FormField label="Distribuidora" value={publisher} onChangeText={setPublisher} editable={!save.isPending} />
-        <FormField label="Região / codificação" value={region} onChangeText={setRegion} editable={!save.isPending} />
+        <RegionSelector value={region} videoStandard={videoStandard} mediaFormat={format} onChange={selection => { setRegion(selection.region); setVideoStandard(selection.videoStandard); }} disabled={save.isPending} />
         <CountrySelector value={country} onChange={setCountry} disabled={save.isPending} />
         <PackagingSelector value={packaging} onChange={setPackaging} disabled={save.isPending} />
         <View style={styles.choices}><Chip icon={<AssetIcon name="limited-edition" color={special ? colors.onPrimary : colors.textSecondary} />} label="Edição especial" selected={special} disabled={save.isPending} onPress={() => setSpecial((value) => !value)} /><Chip icon={<AssetIcon name="limited-edition" color={limited ? colors.onPrimary : colors.textSecondary} />} label="Edição limitada" selected={limited} disabled={save.isPending} onPress={() => setLimited((value) => !value)} /></View>

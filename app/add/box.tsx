@@ -7,6 +7,7 @@ import X from 'lucide-react-native/icons/x';
 import { AppText, Chip, IconButton, Screen } from '../../src/components/ui';
 import { FormField } from '../../src/components/ui/FormField';
 import { CountrySelector } from '../../src/components/ui/CountrySelector';
+import { RegionSelector } from '../../src/components/ui/RegionSelector';
 import { PurchaseDateField } from '../../src/components/ui/PurchaseDateField';
 import { ActionButton } from '../../src/components/ui/ActionButton';
 import { ConditionSelector } from '../../src/components/collection/ConditionSelector';
@@ -27,7 +28,7 @@ import type { MediaFormat } from '../../src/services/supabase/types';
 import { queryKeys } from '../../src/lib/queryClient';
 import { boxQueryKeys } from '../../src/hooks/useCollectionBoxes';
 
-const initial:BoxFormValues={name:'',mediaFormat:'DVD',barcode:'',coverUrl:'',editionName:'',publisher:'',country:'',region:'',discCount:'',special:false,limited:false,condition:'GOOD',price:'',date:'',place:'',notes:''};
+const initial:BoxFormValues={name:'',mediaFormat:'DVD',barcode:'',coverUrl:'',editionName:'',publisher:'',country:'',region:'',videoStandard:null,discCount:'',special:false,limited:false,condition:'GOOD',price:'',date:'',place:'',notes:''};
 export default function AddBoxScreen() {
   const router=useRouter(); const cache=useQueryClient(); const {session}=useSession(); const showSuccess=useSuccessFeedback();
   const [form,setForm]=useState(initial); const [selected,setSelected]=useState<MovieSearchCandidate[]>([]);
@@ -77,7 +78,7 @@ export default function AddBoxScreen() {
           <FormField label="Nome da edição" value={form.editionName} maxLength={200} onChangeText={value=>change('editionName',value)} editable={!save.isPending} />
           <FormField label="Distribuidora" value={form.publisher} maxLength={200} onChangeText={value=>change('publisher',value)} editable={!save.isPending} />
           <CountrySelector value={form.country} onChange={value=>change('country',value)} disabled={save.isPending} />
-          <FormField label="Região / codificação" value={form.region} maxLength={200} onChangeText={value=>change('region',value)} editable={!save.isPending} />
+          <RegionSelector value={form.region} videoStandard={form.videoStandard ?? null} mediaFormat={form.mediaFormat} onChange={selection=>{setForm(current=>({...current,...selection}));setError('');}} disabled={save.isPending} />
           <View style={styles.selected}><AppText variant="label" style={styles.flex}>Edição especial</AppText><Switch accessibilityLabel="Edição especial" disabled={save.isPending} value={form.special} onValueChange={value=>change('special',value)} trackColor={{false:colors.border,true:colors.primary}} /></View>
           <View style={styles.selected}><AppText variant="label" style={styles.flex}>Edição limitada</AppText><Switch accessibilityLabel="Edição limitada" disabled={save.isPending} value={form.limited} onValueChange={value=>change('limited',value)} trackColor={{false:colors.border,true:colors.primary}} /></View>
         </>}

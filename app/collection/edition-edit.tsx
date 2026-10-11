@@ -6,6 +6,7 @@ import { AppText, Screen } from '../../src/components/ui';
 import { ActionButton } from '../../src/components/ui/ActionButton';
 import { FormField } from '../../src/components/ui/FormField';
 import { CountrySelector } from '../../src/components/ui/CountrySelector';
+import { RegionSelector } from '../../src/components/ui/RegionSelector';
 import { PackagingSelector } from '../../src/components/collection/PackagingSelector';
 import { EditionImage } from '../../src/components/add/EditionImage';
 import { EditionCoverPicker } from '../../src/components/covers/EditionCoverPicker';
@@ -36,7 +37,7 @@ function EditionForm({ item, onBack }: { item: CollectionRecord; onBack: () => v
   const { session } = useSession();
   const cache = useQueryClient();
   const showSuccess = useSuccessFeedback();
-  const [values, setValues] = useState({ editionName: edition.edition_name ?? '', publisher: edition.publisher ?? '', country: edition.country ?? '', region: edition.region ?? '', discCount: edition.disc_count?.toString() ?? '', customCoverUrl: edition.custom_cover_url, backCoverUrl: edition.back_cover_url ?? null, packagingType: edition.packaging_type });
+  const [values, setValues] = useState({ editionName: edition.edition_name ?? '', publisher: edition.publisher ?? '', country: edition.country ?? '', region: edition.region ?? '', videoStandard: edition.video_standard ?? null, discCount: edition.disc_count?.toString() ?? '', customCoverUrl: edition.custom_cover_url, backCoverUrl: edition.back_cover_url ?? null, packagingType: edition.packaging_type });
   const [pickerOpen, setPickerOpen] = useState(false);
   const [backCoverBusy, setBackCoverBusy] = useState(false);
   const [frontCoverBusy, setFrontCoverBusy] = useState(false);
@@ -72,7 +73,7 @@ function EditionForm({ item, onBack }: { item: CollectionRecord; onBack: () => v
       <PackagingSelector value={values.packagingType} onChange={packagingType => setValues(previous => ({ ...previous, packagingType }))} disabled={save.isPending} />
       <FormField label="Distribuidora" value={values.publisher} onChangeText={field('publisher')} editable={!save.isPending} maxLength={200} />
       <FormField label="Quantidade de discos" value={values.discCount} onChangeText={field('discCount')} keyboardType="number-pad" editable={!save.isPending} />
-      <FormField label="Região / codificação" value={values.region} onChangeText={field('region')} editable={!save.isPending} maxLength={200} />
+      <RegionSelector value={values.region} videoStandard={values.videoStandard} mediaFormat={edition.media_format} onChange={selection => setValues(previous => ({ ...previous, ...selection }))} disabled={save.isPending} />
       {(error || save.isError) && <AppText accessibilityRole="alert" color="textMuted">{error || save.error?.message}</AppText>}
       <ActionButton label="Salvar edição" busy={save.isPending} disabled={coverBusy} onPress={submit} />
       <ActionButton secondary label="Cancelar" disabled={save.isPending || coverBusy} onPress={onBack} />

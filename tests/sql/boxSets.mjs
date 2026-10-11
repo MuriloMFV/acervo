@@ -19,9 +19,14 @@ const rpc='select public.create_collection_box($1,$2::jsonb,$3::uuid[],$4::jsonb
 try{
   await db.exec(`create role anon;create role authenticated;create schema auth;
     create table auth.users(id uuid primary key,raw_user_meta_data jsonb default '{}');
+    create schema storage;
+    create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
+    create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text references storage.buckets(id),name text);
+    create function storage.foldername(name text) returns text[] language sql immutable as $$select (string_to_array(name,'/'))[1:array_length(string_to_array(name,'/'),1)-1]$$;
+    create function auth.jwt() returns jsonb language sql stable as $$select '{}'::jsonb$$;
     create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
     grant usage on schema auth to authenticated,anon;grant execute on function auth.uid() to authenticated,anon;`);
-  for(const file of ['20261008124824_acervo_foundation.sql','20261009193901_box_sets.sql']) await db.exec(await readFile(new URL(`../../supabase/migrations/${file}`,import.meta.url),'utf8'));
+  for(const file of ['20261008124824_acervo_foundation.sql','20261008192603_edition_cover_storage.sql','20261009143232_copy_photos_and_safe_edition_editing.sql','20261009150017_copy_photo_cover_preference.sql','20261009193901_box_sets.sql','20261010002750_edition_back_cover.sql','20261010021419_edition_cover_types.sql','20261010025750_edition_video_standard.sql']) await db.exec(await readFile(new URL(`../../supabase/migrations/${file}`,import.meta.url),'utf8'));
   await db.query('insert into auth.users(id) values($1),($2)',[a,b]);
   await db.query("insert into public.movies(id,title) values($1,'Alien'),($2,'Aliens')",[m1,m2]);
   check((await query("select count(*)::integer as n from pg_class where relname in ('box_sets','box_set_movies','collection_boxes') and relrowsecurity"))[0].n,3);
@@ -60,5 +65,13 @@ try{
   await denied(rpc,[a,JSON.stringify(box),[m1,m2],JSON.stringify(copy)]);
   await login(a);
   check((await query('update public.collection_boxes set is_favorite=true where id=$1 returning is_favorite',[id]))[0].is_favorite,true);
+  check((await query('select video_standard from public.box_sets where id=$1',[boxId]))[0].video_standard,null);
+  for(const encoding of ['NTSC','PAL','PAL-M','SECAM',null]) {
+    const encoded=(await query(rpc,[a,JSON.stringify({...box,region:'4',video_standard:encoding}),[m1,m2],JSON.stringify(copy)]))[0].id;
+    check((await query('select bs.region,bs.video_standard from public.collection_boxes ci join public.box_sets bs on bs.id=ci.box_set_id where ci.id=$1',[encoded]))[0],{region:'4',video_standard:encoding});
+    check((await query('select condition,notes from public.collection_boxes where id=$1',[encoded]))[0],{condition:'VERY_GOOD',notes:'Box completo'});
+  }
+  for(const encoding of ['', 'UNKNOWN',42,{}]) await denied(rpc,[a,JSON.stringify({...box,video_standard:encoding}),[m1,m2],JSON.stringify(copy)]);
+  check((await query('select count(*)::integer as n from public.box_sets'))[0].n,6);
   console.log(`Box Sets: ${checks} assertivas PostgreSQL/RLS passaram.`);
 }finally{await db.close();}

@@ -1,5 +1,6 @@
 import type { ImageSourcePropType } from 'react-native';
 import type { MediaFormat } from './collectionPreview';
+import type { VideoStandard } from './videoStandard';
 
 export type ItemCondition = 'SEALED' | 'LIKE_NEW' | 'VERY_GOOD' | 'GOOD' | 'FAIR';
 export type PackagingType = 'STANDARD' | 'SNAPCASE' | 'DIGIPAK' | 'STEELBOOK' | 'SLIPCASE' | 'BOX';
@@ -21,6 +22,7 @@ export interface EditionDetailsPreview {
   backCover?: ImageSourcePropType | null;
   mediaFormat: MediaFormat;
   region: string | null;
+  videoStandard?: VideoStandard | null;
   country: string | null;
   publisher: string | null;
   barcode: string | null;

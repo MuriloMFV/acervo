@@ -1,7 +1,9 @@
 import type { EditionRow, PackagingType } from '../supabase/types.ts';
 import { packagingLabels } from '../../utils/collectionDetails.ts';
-export interface EditionFormValues { editionName: string; publisher: string; country: string; region: string; discCount: string; customCoverUrl: string | null; backCoverUrl?: string | null; packagingType?: PackagingType }
-export type EditionEdit = Pick<EditionRow, 'edition_name' | 'publisher' | 'country' | 'region' | 'disc_count' | 'custom_cover_url'> & Partial<Pick<EditionRow, 'back_cover_url' | 'packaging_type'>>;
+import type { VideoStandard } from '../../types/videoStandard';
+import { parseVideoStandard } from '../../utils/videoStandard.ts';
+export interface EditionFormValues { editionName: string; publisher: string; country: string; region: string; discCount: string; customCoverUrl: string | null; backCoverUrl?: string | null; packagingType?: PackagingType; videoStandard?: VideoStandard | null }
+export type EditionEdit = Pick<EditionRow, 'edition_name' | 'publisher' | 'country' | 'region' | 'disc_count' | 'custom_cover_url'> & Partial<Pick<EditionRow, 'back_cover_url' | 'packaging_type' | 'video_standard'>>;
 export function parseDiscCount(value: string): number | null {
   const text = value.trim();
   if (!text) return null;
@@ -11,7 +13,7 @@ export function parseDiscCount(value: string): number | null {
 export function parseEditionForm(form: EditionFormValues): EditionEdit {
   const text = (value: string) => { const result = value.trim(); if (result.length > 200) throw new Error('Use até 200 caracteres por campo.'); return result || null; };
   if (form.packagingType !== undefined && !Object.hasOwn(packagingLabels, form.packagingType)) throw new Error('Selecione um tipo de capa válido.');
-  return { edition_name: text(form.editionName), publisher: text(form.publisher), country: text(form.country), region: text(form.region), disc_count: parseDiscCount(form.discCount), custom_cover_url: form.customCoverUrl?.trim() || null, ...(form.backCoverUrl === undefined ? {} : { back_cover_url: form.backCoverUrl?.trim() || null }), ...(form.packagingType === undefined ? {} : { packaging_type: form.packagingType }) };
+  return { edition_name: text(form.editionName), publisher: text(form.publisher), country: text(form.country), region: text(form.region), disc_count: parseDiscCount(form.discCount), custom_cover_url: form.customCoverUrl?.trim() || null, ...(form.backCoverUrl === undefined ? {} : { back_cover_url: form.backCoverUrl?.trim() || null }), ...(form.packagingType === undefined ? {} : { packaging_type: form.packagingType }), ...(form.videoStandard === undefined ? {} : { video_standard: parseVideoStandard(form.videoStandard) }) };
 }
 export function discCountLabel(value: number | null | undefined): string | null {
   return value == null ? null : `${value} ${value === 1 ? 'disco' : 'discos'}`;

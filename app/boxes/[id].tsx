@@ -6,6 +6,8 @@ import Film from 'lucide-react-native/icons/film';
 import { AppText, Badge, IconButton, Screen } from '../../src/components/ui';
 import { ActionButton } from '../../src/components/ui/ActionButton';
 import { CountryDisplay } from '../../src/components/ui/CountryDisplay';
+import { VideoStandardDisplay } from '../../src/components/ui/VideoStandardDisplay';
+import { regionEncodingDraft } from '../../src/utils/videoStandard';
 import { useCollectionBox } from '../../src/hooks/useCollectionBoxes';
 import { boxCover, includedBoxMovies } from '../../src/services/boxes/mappers';
 import { mediaFormatLabels } from '../../src/components/movie/MediaFormatBadge';
@@ -26,8 +28,9 @@ export default function BoxDetailsScreen() {
   const back=()=>router.canGoBack()?router.back():router.replace('/');
   const cover=box.data?boxCover(box.data):null;
   const set=box.data?.box_set;
+  const regionEncoding=regionEncodingDraft(set?.region??'',set?.video_standard);
   const fields=box.data&&set?[
-    ['Formato',mediaFormatLabels[set.media_format]],['Distribuidora',set.publisher??'—'],['País',set.country??'—'],['Região',set.region??'—'],
+    ['Formato',mediaFormatLabels[set.media_format]],['Distribuidora',set.publisher??'—'],['País',set.country??'—'],['Região',regionEncoding.region||'—'],['Codificação',regionEncoding.videoStandard??'—'],
     ['Discos',set.disc_count?.toString()??'—'],['Código de barras',set.barcode??'—'],
     ...(set.edition_name?[['Edição',set.edition_name]]:[]),
     ...(set.is_special_edition?[['Edição especial','Sim']]:[]),...(set.is_limited_edition?[['Edição limitada','Sim']]:[]),
@@ -42,7 +45,7 @@ export default function BoxDetailsScreen() {
       ListHeaderComponent={<View style={styles.content}>
         <View style={styles.cover}>{cover?<Image accessibilityLabel={`Capa de ${set!.name}`} source={{uri:cover}} style={StyleSheet.absoluteFill} resizeMode="contain" />:<Film size={controls.iconSize} color={colors.textMuted} />}</View>
         <AppText variant="title">{set!.name}</AppText><View style={styles.header}><Badge label="BOX" tone="accent" /><AppText variant="caption" color="textSecondary">{movies.length} filmes</AppText></View>
-        <View style={styles.fields}>{fields.map(([label,value])=><View style={styles.field} key={label}><AppText variant="caption" color="textMuted">{label}</AppText>{label==='País'?<CountryDisplay value={set!.country} />:<AppText variant="label">{value}</AppText>}</View>)}</View>
+        <View style={styles.fields}>{fields.map(([label,value])=><View style={styles.field} key={label}><AppText variant="caption" color="textMuted">{label}</AppText>{label==='País'?<CountryDisplay value={set!.country} />:label==='Codificação'?<VideoStandardDisplay value={regionEncoding.videoStandard} />:<AppText variant="label">{value}</AppText>}</View>)}</View>
         <AppText variant="heading">Filmes incluídos</AppText>
       </View>}
     />}
