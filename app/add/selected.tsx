@@ -11,6 +11,7 @@ import { FormField } from '../../src/components/ui/FormField';
 import { ActionButton } from '../../src/components/ui/ActionButton';
 import { ConditionSelector } from '../../src/components/collection/ConditionSelector';
 import { PackagingSelector } from '../../src/components/collection/PackagingSelector';
+import { CountrySelector } from '../../src/components/ui/CountrySelector';
 import { useSession } from '../../src/contexts/SessionContext';
 import { queryKeys } from '../../src/lib/queryClient';
 import { createCollectionItem } from '../../src/services/collection';
@@ -88,7 +89,7 @@ export default function SelectedMovieScreen() {
             <FormField label="Nome da edição" value={editionName} onChangeText={setEditionName} editable={!save.isPending} />
             <FormField label="Distribuidora" value={publisher} onChangeText={setPublisher} editable={!save.isPending} />
             <FormField label="Região / codificação" value={region} onChangeText={setRegion} editable={!save.isPending} />
-            <FormField label="País" value={country} onChangeText={setCountry} editable={!save.isPending} />
+            <CountrySelector value={country} onChange={setCountry} disabled={save.isPending} />
             <PackagingSelector value={packagingType} onChange={setPackagingType} disabled={save.isPending} />
           </>}
           <ActionButton secondary label="Buscar capa" disabled={save.isPending} onPress={() => setCoverPickerOpen(true)} />

@@ -3,6 +3,7 @@ import Disc3 from 'lucide-react-native/icons/disc-3';
 import { AssetIcon, MediaFormatIcon } from '../visual/AssetIcon';
 import { AppText } from '../ui';
 import { ActionButton } from '../ui/ActionButton';
+import { CountryDisplay } from '../ui/CountryDisplay';
 import { discCountLabel } from '../../services/collection/editionEditing';
 import { MediaFormatBadge } from '../movie';
 import { mediaFormatLabels } from '../movie/MediaFormatBadge';
@@ -44,7 +45,7 @@ export function EditionDetails({ item, special = false, limited = false, onEdit 
         {fields.map((field) => (
           <View key={field.label} style={styles.cell} accessible={field.label === 'Formato' || field.label === 'Discos' || undefined} accessibilityLabel={field.label === 'Formato' || field.label === 'Discos' ? `${field.label}: ${field.value}` : undefined}>
             <AppText variant="caption" color="textMuted">{field.label.toLocaleUpperCase('pt-BR')}</AppText>
-            {field.label === 'Formato' ? <MediaFormatIcon format={edition.mediaFormat} color={colors.text} /> : field.label === 'Discos' ? (
+            {field.label === 'Formato' ? <MediaFormatIcon format={edition.mediaFormat} color={colors.text} /> : field.label === 'País' ? <CountryDisplay value={edition.country} /> : field.label === 'Discos' ? (
               <View style={styles.discs}>
                 {Array.from({ length: visibleDiscCount }, (_, index) => (
                   <Disc3 key={index} size={controls.iconSize} color={colors.text} accessible={false} />

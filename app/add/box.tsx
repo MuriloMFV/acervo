@@ -6,6 +6,7 @@ import ArrowLeft from 'lucide-react-native/icons/arrow-left';
 import X from 'lucide-react-native/icons/x';
 import { AppText, Chip, IconButton, Screen } from '../../src/components/ui';
 import { FormField } from '../../src/components/ui/FormField';
+import { CountrySelector } from '../../src/components/ui/CountrySelector';
 import { PurchaseDateField } from '../../src/components/ui/PurchaseDateField';
 import { ActionButton } from '../../src/components/ui/ActionButton';
 import { ConditionSelector } from '../../src/components/collection/ConditionSelector';
@@ -75,7 +76,7 @@ export default function AddBoxScreen() {
         {extra&&<>
           <FormField label="Nome da edição" value={form.editionName} maxLength={200} onChangeText={value=>change('editionName',value)} editable={!save.isPending} />
           <FormField label="Distribuidora" value={form.publisher} maxLength={200} onChangeText={value=>change('publisher',value)} editable={!save.isPending} />
-          <FormField label="País" value={form.country} maxLength={200} onChangeText={value=>change('country',value)} editable={!save.isPending} />
+          <CountrySelector value={form.country} onChange={value=>change('country',value)} disabled={save.isPending} />
           <FormField label="Região / codificação" value={form.region} maxLength={200} onChangeText={value=>change('region',value)} editable={!save.isPending} />
           <View style={styles.selected}><AppText variant="label" style={styles.flex}>Edição especial</AppText><Switch accessibilityLabel="Edição especial" disabled={save.isPending} value={form.special} onValueChange={value=>change('special',value)} trackColor={{false:colors.border,true:colors.primary}} /></View>
           <View style={styles.selected}><AppText variant="label" style={styles.flex}>Edição limitada</AppText><Switch accessibilityLabel="Edição limitada" disabled={save.isPending} value={form.limited} onValueChange={value=>change('limited',value)} trackColor={{false:colors.border,true:colors.primary}} /></View>

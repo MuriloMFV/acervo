@@ -5,6 +5,7 @@ import ArrowLeft from 'lucide-react-native/icons/arrow-left';
 import Film from 'lucide-react-native/icons/film';
 import { AppText, Badge, IconButton, Screen } from '../../src/components/ui';
 import { ActionButton } from '../../src/components/ui/ActionButton';
+import { CountryDisplay } from '../../src/components/ui/CountryDisplay';
 import { useCollectionBox } from '../../src/hooks/useCollectionBoxes';
 import { boxCover, includedBoxMovies } from '../../src/services/boxes/mappers';
 import { mediaFormatLabels } from '../../src/components/movie/MediaFormatBadge';
@@ -41,7 +42,7 @@ export default function BoxDetailsScreen() {
       ListHeaderComponent={<View style={styles.content}>
         <View style={styles.cover}>{cover?<Image accessibilityLabel={`Capa de ${set!.name}`} source={{uri:cover}} style={StyleSheet.absoluteFill} resizeMode="contain" />:<Film size={controls.iconSize} color={colors.textMuted} />}</View>
         <AppText variant="title">{set!.name}</AppText><View style={styles.header}><Badge label="BOX" tone="accent" /><AppText variant="caption" color="textSecondary">{movies.length} filmes</AppText></View>
-        <View style={styles.fields}>{fields.map(([label,value])=><View style={styles.field} key={label}><AppText variant="caption" color="textMuted">{label}</AppText><AppText variant="label">{value}</AppText></View>)}</View>
+        <View style={styles.fields}>{fields.map(([label,value])=><View style={styles.field} key={label}><AppText variant="caption" color="textMuted">{label}</AppText>{label==='País'?<CountryDisplay value={set!.country} />:<AppText variant="label">{value}</AppText>}</View>)}</View>
         <AppText variant="heading">Filmes incluídos</AppText>
       </View>}
     />}
