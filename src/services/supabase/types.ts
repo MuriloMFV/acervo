@@ -9,6 +9,7 @@ type Timestamps = { created_at: string; updated_at: string };
 export type ProfileRow = Timestamps & {
   id: string;
   display_name: string;
+  // Private profile-photos object key; signed URLs are generated for display.
   avatar_url: string | null;
 }
 export type MovieRow = Timestamps & {

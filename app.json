@@ -35,7 +35,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "O Acervo usa a câmera para ler códigos de barras e fotografar sua cópia física.",
+          "cameraPermission": "O Acervo usa a câmera para ler códigos de barras, fotografar sua mídia física e adicionar sua foto de perfil.",
           "microphonePermission": false,
           "recordAudioAndroid": false,
           "barcodeScannerEnabled": true
@@ -45,8 +45,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "O Acervo usa a galeria para adicionar uma foto da sua cópia.",
-          "cameraPermission": "O Acervo usa a câmera para ler códigos de barras e fotografar sua cópia física.",
+          "photosPermission": "O Acervo usa a galeria para adicionar fotos da sua mídia física e do seu perfil.",
+          "cameraPermission": "O Acervo usa a câmera para ler códigos de barras, fotografar sua mídia física e adicionar sua foto de perfil.",
           "microphonePermission": false
         }
       ],

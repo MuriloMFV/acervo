@@ -11,6 +11,8 @@ import { VisualFeedback } from '../src/components/visual/VisualFeedback';
 import { ActionButton } from '../src/components/ui/ActionButton';
 import { useCollection } from '../src/hooks/useCollection';
 import { useCollectionBoxes } from '../src/hooks/useCollectionBoxes';
+import { useProfile } from '../src/hooks/useProfile';
+import { useProfilePhoto } from '../src/hooks/useProfilePhoto';
 import { mapBoxCard } from '../src/services/boxes/mappers';
 import { mapCollectionCard } from '../src/services/collection/mappers';
 import { colors, radius, spacing } from '../src/theme';
@@ -24,6 +26,8 @@ export default function CollectionScreen() {
   const router = useRouter();
   const collection = useCollection();
   const boxes = useCollectionBoxes();
+  const profile = useProfile();
+  const photo = useProfilePhoto(profile.data ?? null);
   const { added } = useLocalSearchParams<{ added?: string }>();
   const { filters, setFilters, search, setSearch, active, reset } = useCollectionFilters();
   const openItem = useCallback((id: string) => {
@@ -58,7 +62,7 @@ export default function CollectionScreen() {
 
   return (
     <Screen edges={['top', 'left', 'right']} style={styles.screen}>
-      <CollectionBrandHeader />
+      <CollectionBrandHeader photoUrl={photo.url} photoLoading={photo.loading} />
       <View style={[styles.content, view === 'grid' && styles.gridContent]}>
         <CollectionItems
           items={items}

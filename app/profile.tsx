@@ -9,6 +9,8 @@ import { CollectionStatistics } from '../src/components/profile/CollectionStatis
 import { ProfileLinks } from '../src/components/profile/ProfileLinks';
 import { useCollection } from '../src/hooks/useCollection';
 import { useProfile } from '../src/hooks/useProfile';
+import { useProfilePhoto } from '../src/hooks/useProfilePhoto';
+import { profileDisplayName } from '../src/services/profile/identity';
 import { useCollectionFilters } from '../src/contexts/CollectionFiltersContext';
 import { calculateCollectionStats } from '../src/utils/collectionStats';
 import type { CollectionShortcut } from '../src/types/collectionFilters';
@@ -21,6 +23,7 @@ export default function ProfileScreen() {
   const collection = useCollection();
   const profile = useProfile();
   const { session } = useSession();
+  const photo = useProfilePhoto(profile.data ?? null);
   const exportLock = useRef(false);
   const [exporting, setExporting] = useState(false);
   const exportAcervo = async () => {
@@ -38,7 +41,8 @@ export default function ProfileScreen() {
   const openShortcut = (shortcut: CollectionShortcut) => { applyShortcut(shortcut); openCollection(); };
   return <Screen edges={['top', 'left', 'right']} style={styles.screen}>
     <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-      <ProfileHeader profile={profile.data ?? null} count={stats?.total ?? null} onCollectionPress={openCollection} onAccountPress={openAccount} />
+      <ProfileHeader profile={profile.data ?? null} displayName={profileDisplayName(profile.data?.display_name, session?.user)} photoUrl={photo.url} photoBusy={photo.busy} photoLoading={photo.loading} onPhotoPress={photo.choose} onCollectionPress={openCollection} onAccountPress={openAccount} />
+      {!!photo.error && <View style={styles.error}><AppText accessibilityRole="alert" color="textMuted">{photo.error}</AppText><ActionButton secondary label="Tentar novamente" disabled={photo.busy} onPress={photo.retry} /></View>}
       {profile.isPending && <ActivityIndicator accessibilityLabel="Carregando perfil" color={colors.accent} />}
       {profile.isError && <View style={styles.error}><AppText color="textMuted">Não foi possível carregar o perfil</AppText><ActionButton secondary label="Tentar novamente" onPress={() => { void profile.refetch(); }} /></View>}
       {collection.isPending && <ActivityIndicator accessibilityLabel="Carregando estatísticas" color={colors.accent} />}
