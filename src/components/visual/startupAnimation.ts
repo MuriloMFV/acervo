@@ -44,9 +44,11 @@ export const sceneCrops = {
     { crop: { x: 0, y: 680, width: 941, height: 330 }, place: { x: 0, y: 638, width: 941 } },
     { crop: { x: 0, y: 1050, width: 941, height: 295 }, place: { x: 0, y: 964, width: 941 } },
   ],
-  plantLeft: { crop: { x: 24, y: 24, width: 700, height: 1550 }, place: { x: -20, y: -30, width: 280 } },
-  plantRight: { crop: { x: 510, y: 245, width: 425, height: 855 }, place: { x: 758, y: -25, width: 170 } },
-  plantBottom: { crop: { x: 585, y: 1190, width: 350, height: 410 }, place: { x: 813, y: 1112, width: 112 } },
+  // Align the visible pot bases with the shelf surfaces (scene y=629/1243).
+  // The transparent crop bounds extend beyond the pots and are not their bases.
+  plantLeft: { crop: { x: 24, y: 24, width: 700, height: 1550 }, place: { x: -20, y: 409, width: 280 } },
+  plantRight: { crop: { x: 510, y: 245, width: 425, height: 855 }, place: { x: 758, y: 504, width: 170 } },
+  plantBottom: { crop: { x: 585, y: 1190, width: 350, height: 410 }, place: { x: 813, y: 1122, width: 112 } },
   logo: { crop: { x: 150, y: 1320, width: 630, height: 160 }, place: { x: 150, y: 1320, width: 630 } },
   line: { crop: { x: 340, y: 1490, width: 260, height: 40 }, place: { x: 340, y: 1490, width: 260 } },
   lamp: { x: 390, y: 93, width: 627 },
