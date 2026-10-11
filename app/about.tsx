@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import Constants from 'expo-constants';
 import ArrowLeft from 'lucide-react-native/icons/arrow-left';
 import Search from 'lucide-react-native/icons/search';
 import ScanBarcode from 'lucide-react-native/icons/scan-barcode';
@@ -28,7 +27,7 @@ function Feature({ icon, title, text }: { icon: ReactNode; title: string; text: 
 
 export default function AboutScreen() {
   const router = useRouter();
-  const version = Constants.expoConfig?.version ?? appConfig.expo.version;
+  const version = appConfig.expo.version;
   return <Screen>
     <View style={styles.header}>
       <IconButton accessibilityLabel="Voltar" onPress={() => router.canGoBack() ? router.back() : router.replace('/profile')}>
@@ -47,13 +46,14 @@ export default function AboutScreen() {
           </View>)}
         </View>
       </View>
+      <AppText color="textSecondary" style={styles.centered}>Projeto de estudos criado por um colecionador de mídia física, sem fins comerciais.</AppText>
       <View style={styles.features}>
         <Feature icon={<Search {...iconProps} />} title="Encontre filmes" text="Busque títulos e informações no TMDB." />
         <Feature icon={<ScanBarcode {...iconProps} />} title="Identifique sua edição" text="Leia o código de barras. Sem resultado? UPCitemdb e SerpApi ajudam na busca." />
         <Feature icon={<Images {...iconProps} />} title="A capa da sua edição" text="Encontre e escolha a capa certa da sua mídia física." />
         <Feature icon={<AssetIcon name="archive" />} title="Sua coleção, do seu jeito" text="Organize seus filmes com favoritos, filtros e estatísticas." />
       </View>
-      <AppText variant="caption" color="textMuted" style={styles.centered}>Versão {version}</AppText>
+      <AppText variant="caption" color="textMuted" style={styles.centered}>Versão {version} (beta)</AppText>
     </ScrollView>
   </Screen>;
 }
