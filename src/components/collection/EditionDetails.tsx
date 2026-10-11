@@ -1,4 +1,5 @@
 import { StyleSheet, View } from 'react-native';
+import Disc3 from 'lucide-react-native/icons/disc-3';
 import { AssetIcon, MediaFormatIcon } from '../visual/AssetIcon';
 import { AppText } from '../ui';
 import { ActionButton } from '../ui/ActionButton';
@@ -11,6 +12,9 @@ import { conditionLabels, packagingLabels, formatPurchaseDate, formatPurchasePri
 
 export function EditionDetails({ item, special = false, limited = false, onEdit }: { item: CollectionItemDetailsPreview; special?: boolean; limited?: boolean; onEdit?: () => void }) {
   const { edition, copy } = item;
+  const discCount = edition.discCount ?? 0;
+  // Keep very large box sets from creating an unbounded list of SVGs.
+  const visibleDiscCount = Math.min(discCount, 32);
   const fields = [
     { label: 'Formato', value: mediaFormatLabels[edition.mediaFormat] },
     { label: 'Região', value: edition.region ?? '—' },
@@ -38,9 +42,17 @@ export function EditionDetails({ item, special = false, limited = false, onEdit 
       {(special || limited) && <View style={styles.heading}><AssetIcon name="limited-edition" /><AppText variant="caption" color="textSecondary">{special && limited ? 'Edição especial · limitada' : limited ? 'Edição limitada' : 'Edição especial'}</AppText></View>}
       <View style={styles.grid}>
         {fields.map((field) => (
-          <View key={field.label} style={styles.cell} accessible={field.label === 'Formato' || undefined} accessibilityLabel={field.label === 'Formato' ? `Formato: ${field.value}` : undefined}>
+          <View key={field.label} style={styles.cell} accessible={field.label === 'Formato' || field.label === 'Discos' || undefined} accessibilityLabel={field.label === 'Formato' || field.label === 'Discos' ? `${field.label}: ${field.value}` : undefined}>
             <AppText variant="caption" color="textMuted">{field.label.toLocaleUpperCase('pt-BR')}</AppText>
-            {field.label === 'Formato' ? <MediaFormatIcon format={edition.mediaFormat} color={colors.text} /> : <AppText variant="label" color={'accent' in field && field.accent ? 'accent' : 'text'}>{field.value}</AppText>}
+            {field.label === 'Formato' ? <MediaFormatIcon format={edition.mediaFormat} color={colors.text} /> : field.label === 'Discos' ? (
+              <View style={styles.discs}>
+                {Array.from({ length: visibleDiscCount }, (_, index) => (
+                  <Disc3 key={index} size={controls.iconSize} color={colors.text} accessible={false} />
+                ))}
+                {discCount > visibleDiscCount && <AppText variant="caption" color="textSecondary">+{discCount - visibleDiscCount}</AppText>}
+                <AppText variant="label">{discCount}</AppText>
+              </View>
+            ) : <AppText variant="label" color={'accent' in field && field.accent ? 'accent' : 'text'}>{field.value}</AppText>}
           </View>
         ))}
       </View>
@@ -62,4 +74,5 @@ const styles = StyleSheet.create({
   title: { flexGrow: 1 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   cell: { flexBasis: '47%', flexGrow: 1, borderRadius: radius.md, backgroundColor: colors.surface, padding: spacing.md, gap: spacing.sm },
+  discs: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.sm },
 });

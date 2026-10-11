@@ -53,7 +53,7 @@ export default function CollectionItemRoute() {
         </View>
       ) : !item ? <View style={styles.notFound}><AppText>Item não encontrado</AppText></View> : (
         <ScrollView contentContainerStyle={styles.scroll}>
-          <MovieHero movie={item.movie} />
+          <MovieHero movie={item.movie} backCover={item.edition.backCover} />
           <View style={styles.content}>
             <DetailActionBar favorite={item.copy.favorite} disabled={busy} onToggleFavorite={() => favorite.mutate(!item.copy.favorite)} onEdit={() => router.navigate({ pathname: '/collection/edit', params: { id: itemId } })} onRemove={confirmRemoval} />
             {busy && <ActivityIndicator accessibilityLabel="Salvando alteração" color={colors.accent} />}
