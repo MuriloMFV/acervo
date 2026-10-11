@@ -10,11 +10,12 @@ import { buildEditionCoverQuery } from '../../src/services/covers';
 import { FormField } from '../../src/components/ui/FormField';
 import { ActionButton } from '../../src/components/ui/ActionButton';
 import { ConditionSelector } from '../../src/components/collection/ConditionSelector';
+import { PackagingSelector } from '../../src/components/collection/PackagingSelector';
 import { useSession } from '../../src/contexts/SessionContext';
 import { queryKeys } from '../../src/lib/queryClient';
 import { createCollectionItem } from '../../src/services/collection';
 import { getMovieDetails } from '../../src/services/tmdb';
-import type { MediaFormat, ItemCondition } from '../../src/services/supabase/types';
+import type { MediaFormat, ItemCondition, PackagingType } from '../../src/services/supabase/types';
 import { MediaFormatIcon } from '../../src/components/visual/AssetIcon';
 import { useSuccessFeedback } from '../../src/components/visual/SuccessFeedback';
 import { mediaFormatLabels } from '../../src/components/movie/MediaFormatBadge';
@@ -41,11 +42,12 @@ export default function SelectedMovieScreen() {
   const [publisher, setPublisher] = useState('');
   const [region, setRegion] = useState('');
   const [country, setCountry] = useState('');
+  const [packagingType, setPackagingType] = useState<PackagingType>('STANDARD');
   const saving = useRef(false);
   const save = useMutation({
     mutationFn: () => {
       if (!movie.data || !session) throw new Error('Filme ou sessão indisponível');
-      return createCollectionItem(movie.data, format, condition, { customCoverUrl, backCoverUrl, editionName, publisher, region, country });
+      return createCollectionItem(movie.data, format, condition, { customCoverUrl, backCoverUrl, editionName, publisher, region, country, packagingType });
     },
     onSuccess: async (item) => {
       await cache.invalidateQueries({ queryKey: queryKeys.collection(session!.user.id) });
@@ -87,6 +89,7 @@ export default function SelectedMovieScreen() {
             <FormField label="Distribuidora" value={publisher} onChangeText={setPublisher} editable={!save.isPending} />
             <FormField label="Região / codificação" value={region} onChangeText={setRegion} editable={!save.isPending} />
             <FormField label="País" value={country} onChangeText={setCountry} editable={!save.isPending} />
+            <PackagingSelector value={packagingType} onChange={setPackagingType} disabled={save.isPending} />
           </>}
           <ActionButton secondary label="Buscar capa" disabled={save.isPending} onPress={() => setCoverPickerOpen(true)} />
           {customCoverUrl && <ActionButton secondary label="Usar poster do TMDB" disabled={save.isPending} onPress={() => setCustomCoverUrl(null)} />}

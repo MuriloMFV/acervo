@@ -1,7 +1,7 @@
 // Matches checked-in migrations. Regenerate from Supabase after applying them.
 // Preview/mock types remain separate from persistence.
 export type MediaFormat = 'DVD' | 'BLURAY' | 'UHD_4K' | 'VHS';
-export type PackagingType = 'STANDARD' | 'STEELBOOK' | 'DIGIPAK' | 'BOX';
+export type PackagingType = 'STANDARD' | 'SNAPCASE' | 'DIGIPAK' | 'STEELBOOK' | 'SLIPCASE' | 'BOX';
 export type ItemCondition = 'SEALED' | 'LIKE_NEW' | 'VERY_GOOD' | 'GOOD' | 'FAIR';
 
 type Timestamps = { created_at: string; updated_at: string };
@@ -94,7 +94,7 @@ export interface Database {
     Views: { [_ in never]: never };
     Functions: {
       create_collection_box: { Args: { p_expected_user_id: string; p_box: BoxSetInput; p_movie_ids: string[]; p_copy: BoxCopyInput }; Returns: string };
-      edit_collection_edition: { Args: { p_item_id: string; p_expected_edition_id: string; p_fields: { edition_name: string | null; publisher: string | null; country: string | null; region: string | null; disc_count: number | null; custom_cover_url: string | null; back_cover_url?: string | null } }; Returns: string }
+      edit_collection_edition: { Args: { p_item_id: string; p_expected_edition_id: string; p_fields: { edition_name: string | null; publisher: string | null; country: string | null; region: string | null; disc_count: number | null; custom_cover_url: string | null; back_cover_url?: string | null; packaging_type?: PackagingType } }; Returns: string }
     };
     Enums: { media_format: MediaFormat; packaging_type: PackagingType; item_condition: ItemCondition };
     CompositeTypes: { [_ in never]: never };

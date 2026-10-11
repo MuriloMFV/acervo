@@ -6,6 +6,7 @@ import { AppText, Chip } from '../ui';
 import { FormField } from '../ui/FormField';
 import { ActionButton } from '../ui/ActionButton';
 import { ConditionSelector } from '../collection/ConditionSelector';
+import { PackagingSelector } from '../collection/PackagingSelector';
 import { MediaFormatIcon, AssetIcon } from '../visual/AssetIcon';
 import { useSuccessFeedback } from '../visual/SuccessFeedback';
 import { MediaFormatBadge } from '../movie/MediaFormatBadge';
@@ -103,7 +104,7 @@ export function BarcodeConfirmation({ barcode, knownEdition, movie, candidate, w
       {knownEdition.region && <AppText color="textSecondary">Região: {knownEdition.region}</AppText>}
       {knownEdition.publisher && <AppText color="textSecondary">Distribuidora: {knownEdition.publisher}</AppText>}
       {knownEdition.country && <AppText color="textSecondary">País: {knownEdition.country}</AppText>}
-      {knownEdition.packaging_type !== 'STANDARD' && <AppText color="textSecondary">{packagingLabels[knownEdition.packaging_type]}</AppText>}
+      <AppText color="textSecondary">Tipo de capa: {packagingLabels[knownEdition.packaging_type]}</AppText>
       {knownEdition.is_special_edition && <View style={styles.editionLabel}><AssetIcon name="limited-edition" /><AppText variant="caption">Edição especial</AppText></View>}
       {knownEdition.is_limited_edition && <View style={styles.editionLabel}><AssetIcon name="limited-edition" /><AppText variant="caption">Edição limitada</AppText></View>}
     </View> : <>
@@ -115,7 +116,7 @@ export function BarcodeConfirmation({ barcode, knownEdition, movie, candidate, w
         <FormField label="Distribuidora" value={publisher} onChangeText={setPublisher} editable={!save.isPending} />
         <FormField label="Região / codificação" value={region} onChangeText={setRegion} editable={!save.isPending} />
         <FormField label="País" value={country} onChangeText={setCountry} editable={!save.isPending} />
-        <AppText variant="label">Embalagem</AppText><View style={styles.choices}>{(Object.keys(packagingLabels) as PackagingType[]).map((value) => <Chip key={value} label={packagingLabels[value]} selected={packaging === value} disabled={save.isPending} onPress={() => setPackaging(value)} />)}</View>
+        <PackagingSelector value={packaging} onChange={setPackaging} disabled={save.isPending} />
         <View style={styles.choices}><Chip icon={<AssetIcon name="limited-edition" color={special ? colors.onPrimary : colors.textSecondary} />} label="Edição especial" selected={special} disabled={save.isPending} onPress={() => setSpecial((value) => !value)} /><Chip icon={<AssetIcon name="limited-edition" color={limited ? colors.onPrimary : colors.textSecondary} />} label="Edição limitada" selected={limited} disabled={save.isPending} onPress={() => setLimited((value) => !value)} /></View>
       </View>}
     </>}

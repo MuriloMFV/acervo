@@ -55,7 +55,7 @@ test('compatible editions require same movie and format and no specific packagin
   }
 });
 test('all persisted conditions map to Portuguese labels', () => {
-  assert.deepEqual(conditionLabels, { SEALED: 'Lacrado', LIKE_NEW: 'Como novo', VERY_GOOD: 'Muito bom', GOOD: 'Bom', FAIR: 'Regular' });
+  assert.deepEqual(conditionLabels, { SEALED: 'Lacrado', LIKE_NEW: 'Como novo', VERY_GOOD: 'Muito bom', GOOD: 'Bom', FAIR: 'Ruim' });
 });
 test('editing parses decimal comma, zero, real calendar date and optional fields', () => {
   const form = { condition: 'LIKE_NEW', price: ' 12,50 ', date: '2024-02-29', place: ' Loja ', notes: ' Nota ' };

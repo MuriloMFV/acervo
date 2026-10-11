@@ -36,5 +36,5 @@ test('runtime formats minutes and hours and accepts missing information', () => 
   assert.equal(formatRuntime(0), '—');
 });
 test('condition labels use the five agreed Portuguese names', () => {
-  assert.deepEqual(Object.values(conditionLabels), ['Lacrado', 'Como novo', 'Muito bom', 'Bom', 'Regular']);
+  assert.deepEqual(Object.values(conditionLabels), ['Lacrado', 'Como novo', 'Muito bom', 'Bom', 'Ruim']);
 });

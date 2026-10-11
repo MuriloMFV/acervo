@@ -5,6 +5,7 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleShe
 import { AppText, Screen } from '../../src/components/ui';
 import { ActionButton } from '../../src/components/ui/ActionButton';
 import { FormField } from '../../src/components/ui/FormField';
+import { PackagingSelector } from '../../src/components/collection/PackagingSelector';
 import { EditionImage } from '../../src/components/add/EditionImage';
 import { EditionCoverPicker } from '../../src/components/covers/EditionCoverPicker';
 import { EditionBackCoverField } from '../../src/components/covers/EditionBackCoverField';
@@ -34,7 +35,7 @@ function EditionForm({ item, onBack }: { item: CollectionRecord; onBack: () => v
   const { session } = useSession();
   const cache = useQueryClient();
   const showSuccess = useSuccessFeedback();
-  const [values, setValues] = useState({ editionName: edition.edition_name ?? '', publisher: edition.publisher ?? '', country: edition.country ?? '', region: edition.region ?? '', discCount: edition.disc_count?.toString() ?? '', customCoverUrl: edition.custom_cover_url, backCoverUrl: edition.back_cover_url ?? null });
+  const [values, setValues] = useState({ editionName: edition.edition_name ?? '', publisher: edition.publisher ?? '', country: edition.country ?? '', region: edition.region ?? '', discCount: edition.disc_count?.toString() ?? '', customCoverUrl: edition.custom_cover_url, backCoverUrl: edition.back_cover_url ?? null, packagingType: edition.packaging_type });
   const [pickerOpen, setPickerOpen] = useState(false);
   const [backCoverBusy, setBackCoverBusy] = useState(false);
   const [frontCoverBusy, setFrontCoverBusy] = useState(false);
@@ -67,6 +68,7 @@ function EditionForm({ item, onBack }: { item: CollectionRecord; onBack: () => v
       <EditionBackCoverField value={values.backCoverUrl} onChange={url => setValues(previous => ({ ...previous, backCoverUrl: url }))} onBusyChange={setBackCoverBusy} search={{ title: edition.movie.title, mediaFormat: edition.media_format, barcode: edition.barcode ?? undefined, editionName: values.editionName, publisher: values.publisher, country: values.country, region: values.region }} disabled={save.isPending || frontCoverBusy} />
       <FormField label="Nome da edição" value={values.editionName} onChangeText={field('editionName')} editable={!save.isPending} maxLength={200} />
       <FormField label="País" value={values.country} onChangeText={field('country')} editable={!save.isPending} maxLength={200} />
+      <PackagingSelector value={values.packagingType} onChange={packagingType => setValues(previous => ({ ...previous, packagingType }))} disabled={save.isPending} />
       <FormField label="Distribuidora" value={values.publisher} onChangeText={field('publisher')} editable={!save.isPending} maxLength={200} />
       <FormField label="Quantidade de discos" value={values.discCount} onChangeText={field('discCount')} keyboardType="number-pad" editable={!save.isPending} />
       <FormField label="Região / codificação" value={values.region} onChangeText={field('region')} editable={!save.isPending} maxLength={200} />

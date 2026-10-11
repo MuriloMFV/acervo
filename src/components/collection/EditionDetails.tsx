@@ -21,7 +21,7 @@ export function EditionDetails({ item, special = false, limited = false, onEdit 
     { label: 'País', value: edition.country ?? '—' },
     { label: 'Distribuidora', value: edition.publisher ?? '—' },
     { label: 'Código de barras', value: edition.barcode ?? '—' },
-    ...(edition.packagingType ? [{ label: 'Embalagem', value: packagingLabels[edition.packagingType] }] : []),
+    ...(edition.packagingType ? [{ label: 'Tipo de capa', value: packagingLabels[edition.packagingType] }] : []),
     ...(edition.editionName ? [{ label: 'Edição', value: edition.editionName }] : []),
     ...(edition.discCount != null ? [{ label: 'Discos', value: discCountLabel(edition.discCount)! }] : []),
   ];

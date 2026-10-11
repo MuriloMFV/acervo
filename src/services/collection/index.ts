@@ -57,7 +57,7 @@ export async function createCollectionItem(movie: MovieForCollection, format: Me
   const backCoverUrl = storedEditionCover(details.backCoverUrl, client.storage.from('edition-covers').getPublicUrl('').data.publicUrl);
   const savedMovie = await findOrCreateMovie(movie);
   // Non-default metadata or a custom cover identifies a new edition; never update a shared row.
-  if (details.customCoverUrl || backCoverUrl || [details.editionName, details.publisher, details.region, details.country].some(value => value?.trim())) {
+  if ((details.packagingType && details.packagingType !== 'STANDARD') || details.customCoverUrl || backCoverUrl || [details.editionName, details.publisher, details.region, details.country].some(value => value?.trim())) {
     const { data, error } = await client.from('editions').insert(newEditionPayload(savedMovie.id, format, { ...details, backCoverUrl })).select('id').single();
     if (error) throw error;
     return createCollectionCopy(data.id, condition, userId);

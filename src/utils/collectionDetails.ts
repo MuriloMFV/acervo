@@ -1,10 +1,10 @@
 import type { CollectionItemDetailsPreview, ItemCondition, PackagingType } from '../types/collectionDetails';
 
 export const conditionLabels: Record<ItemCondition, string> = {
-  SEALED: 'Lacrado', LIKE_NEW: 'Como novo', VERY_GOOD: 'Muito bom', GOOD: 'Bom', FAIR: 'Regular',
+  SEALED: 'Lacrado', LIKE_NEW: 'Como novo', VERY_GOOD: 'Muito bom', GOOD: 'Bom', FAIR: 'Ruim',
 };
 export const packagingLabels: Record<PackagingType, string> = {
-  STANDARD: 'Padrão', STEELBOOK: 'SteelBook', DIGIPAK: 'Digipak', BOX: 'Box',
+  STANDARD: 'Case', SNAPCASE: 'Snapcase', DIGIPAK: 'Digipak', STEELBOOK: 'Steelbook', SLIPCASE: 'Luva', BOX: 'Box',
 };
 
 export function findCollectionItemDetails(items: readonly CollectionItemDetailsPreview[], id: string | string[] | undefined) {

@@ -39,7 +39,7 @@ export function editionPayload(movieId: string, format: MediaFormat): Database['
 }
 export function newEditionPayload(movieId: string, format: MediaFormat, details: NewEditionDetails): Database['public']['Tables']['editions']['Insert'] {
   return {
-    ...editionPayload(movieId, format), custom_cover_url: details.customCoverUrl ?? null,
+    ...editionPayload(movieId, format), packaging_type: details.packagingType ?? 'STANDARD', custom_cover_url: details.customCoverUrl ?? null,
     back_cover_url: details.backCoverUrl?.trim() || null,
     edition_name: details.editionName?.trim() || null, publisher: details.publisher?.trim() || null,
     region: details.region?.trim() || null, country: details.country?.trim() || null,
