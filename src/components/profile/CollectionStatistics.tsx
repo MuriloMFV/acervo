@@ -13,13 +13,18 @@ function FrequentCard({ label, value, wide = false }: { label: string; value: Fr
   return <View style={[styles.card, styles.frequent, wide && styles.wide]}>
     <AppText variant="caption" color="textMuted">{label}</AppText>
     <AppText variant="heading">{value?.label ?? '—'}</AppText>
-    {value && <AppText variant="caption" color="textSecondary">{value.count} {value.count === 1 ? 'item' : 'itens'}</AppText>}
+    {value && <AppText variant="caption" color="textSecondary">{value.count} {value.count === 1 ? 'filme' : 'filmes'}</AppText>}
   </View>;
 }
 export function CollectionStatistics({ stats }: { stats: CollectionStats }) {
   return <View style={styles.section}>
     <View style={styles.heading}><AppText variant="heading" style={styles.title}>Estatísticas</AppText><AppText variant="caption" color="textMuted">VISÃO GERAL</AppText></View>
-    <View style={[styles.card, styles.total]}><View style={styles.title}><AppText variant="caption" color="textMuted">TOTAL DE FILMES</AppText><View style={styles.numberRow}><AppText variant="title" color="accent">{stats.total}</AppText><AppText variant="caption" color="textSecondary">filmes físicos</AppText></View></View><LibraryBig size={controls.iconSize + spacing.sm} color={colors.accent} /></View>
+    <View style={[styles.card, styles.total]}><View style={styles.title}><AppText variant="caption" color="textMuted">ITENS FÍSICOS TOTAIS</AppText><View style={styles.numberRow}><AppText variant="title" color="accent">{stats.total}</AppText><AppText variant="caption" color="textSecondary">itens</AppText></View></View><LibraryBig size={controls.iconSize + spacing.sm} color={colors.accent} /></View>
+    <View style={styles.frequencies}>
+      <View style={[styles.card, styles.frequent]}><AppText variant="caption" color="textMuted">FILMES INDIVIDUAIS</AppText><AppText variant="heading">{stats.individualMovies}</AppText></View>
+      <View style={[styles.card, styles.frequent]}><AppText variant="caption" color="textMuted">BOXES</AppText><AppText variant="heading">{stats.boxes}</AppText></View>
+      <View style={[styles.card, styles.wide]}><AppText variant="caption" color="textMuted">TOTAL DE FILMES NO ACERVO</AppText><AppText variant="heading" color="accent">{stats.totalMovies}</AppText><AppText variant="caption" color="textSecondary">Inclui os filmes dentro dos boxes</AppText></View>
+    </View>
     <View style={styles.formats}>{formats.map((format) => <View key={format} style={[styles.card, styles.format]}><AppText variant="caption" color="textMuted">{mediaFormatLabels[format].toLocaleUpperCase('pt-BR')}</AppText><AppText variant="heading">{stats.formats[format]}</AppText><AppText variant="caption" color="accent">{(stats.total ? stats.formats[format] / stats.total * 100 : 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%</AppText></View>)}</View>
     <View style={styles.frequencies}><FrequentCard label="GÊNERO MAIS PRESENTE" value={stats.genre} /><FrequentCard label="DÉCADA MAIS PRESENTE" value={stats.decade} /><FrequentCard label="DIRETOR MAIS PRESENTE" value={stats.director} wide /></View>
     <View style={[styles.card, styles.total]}><Banknote size={controls.iconSize} color={colors.accent} /><View style={styles.title}><AppText variant="caption" color="textMuted">VALOR TOTAL REGISTRADO</AppText><AppText variant="heading" color="accent">{formatPurchasePrice(stats.pricedItems ? stats.registeredValue : null)}</AppText></View></View>

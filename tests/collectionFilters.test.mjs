@@ -89,14 +89,14 @@ test('defaults and shortcuts reset criteria; filter activity and toggles are imm
   assert.deepEqual(filtersForShortcut('RECENT'), defaultCollectionFilters());
 });
 test('statistics count copies, all formats, each genre, decades, directors and registered prices', () => {
-  assert.deepEqual(calculateCollectionStats(items), { total: 5, formats: { DVD: 1, BLURAY: 2, UHD_4K: 1, VHS: 1 }, genre: { label: 'Terror', count: 3 }, decade: { label: '1990s', count: 2 }, director: { label: 'Ridley Scott', count: 2 }, registeredValue: 40, pricedItems: 3, favorites: 2, specialEditions: 2 });
+  assert.deepEqual(calculateCollectionStats(items), { total: 5, individualMovies: 5, boxes: 0, totalMovies: 5, formats: { DVD: 1, BLURAY: 2, UHD_4K: 1, VHS: 1 }, genre: { label: 'Terror', count: 3 }, decade: { label: '1990s', count: 2 }, director: { label: 'Ridley Scott', count: 2 }, registeredValue: 40, pricedItems: 3, favorites: 2, specialEditions: 2 });
   const sameMovie = { ...items[0], id: 'another-copy' };
   assert.equal(calculateCollectionStats([items[0], sameMovie]).total, 2);
   assert.equal(calculateCollectionStats([items[0], sameMovie]).genre.count, 2);
 });
 test('empty and absent statistics do not invent metadata or registered prices', () => {
   const empty = calculateCollectionStats([]);
-  assert.deepEqual(empty, { total: 0, formats: { DVD: 0, BLURAY: 0, UHD_4K: 0, VHS: 0 }, genre: null, decade: null, director: null, registeredValue: 0, pricedItems: 0, favorites: 0, specialEditions: 0 });
+  assert.deepEqual(empty, { total: 0, individualMovies: 0, boxes: 0, totalMovies: 0, formats: { DVD: 0, BLURAY: 0, UHD_4K: 0, VHS: 0 }, genre: null, decade: null, director: null, registeredValue: 0, pricedItems: 0, favorites: 0, specialEditions: 0 });
   const absent = calculateCollectionStats([record('1', 'Sem dados', { movie: { director: ' ', genres: ['', ' '] } })]);
   assert.equal(absent.genre, null); assert.equal(absent.decade, null); assert.equal(absent.director, null); assert.equal(absent.pricedItems, 0);
   assert.equal(calculateCollectionStats([record('2', 'Grátis', { purchase_price: 0 })]).pricedItems, 1);

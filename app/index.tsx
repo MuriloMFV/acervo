@@ -16,7 +16,7 @@ import { useProfilePhoto } from '../src/hooks/useProfilePhoto';
 import { colors, radius, spacing } from '../src/theme';
 import { useCollectionFilters } from '../src/contexts/CollectionFiltersContext';
 import { CollectionFiltersPanel } from '../src/components/collection/CollectionFiltersPanel';
-import { applyCollectionFilters, availableCollectionFilters } from '../src/utils/collectionFilters';
+import { applyCollectionBoxFilters, applyCollectionFilters, availableCollectionFilters } from '../src/utils/collectionFilters';
 import { calculateCollectionStats } from '../src/utils/collectionStats';
 import { mergeCollectionItems } from '../src/utils/collectionItems';
 
@@ -37,12 +37,12 @@ export default function CollectionScreen() {
   }, [router]);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [view, setView] = useState<CollectionView>('grid');
-  const stats = useMemo(() => calculateCollectionStats(collection.data ?? []), [collection.data]);
-  const physicalCount = stats.total + (boxes.data?.length ?? 0);
-  const options = useMemo(() => availableCollectionFilters(collection.data ?? []), [collection.data]);
+  const stats = useMemo(() => calculateCollectionStats(collection.data ?? [], boxes.data ?? []), [collection.data, boxes.data]);
+  const physicalCount = stats.total;
+  const options = useMemo(() => availableCollectionFilters(collection.data ?? [], boxes.data ?? []), [collection.data, boxes.data]);
   const items = useMemo(() => mergeCollectionItems(
     applyCollectionFilters(collection.data ?? [], search, filters),
-    (boxes.data ?? []).filter(item => item.box_set.name.toLocaleLowerCase('pt-BR').includes(search.trim().toLocaleLowerCase('pt-BR'))),
+    applyCollectionBoxFilters(boxes.data ?? [], search, filters),
     filters.sort,
   ), [collection.data, boxes.data, search, filters]);
   const visibleCount = items.length;

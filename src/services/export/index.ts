@@ -5,6 +5,7 @@ import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { authenticatedUserId, listCollectionItems } from '../collection';
+import { listCollectionBoxes } from '../boxes';
 import { signedCopyPhotoCovers } from '../photos';
 import { photoCoverRequests, withPhotoCover } from '../photos/covers';
 import { fontAssets, fontFamilies } from '../../theme/fonts';
@@ -60,10 +61,11 @@ async function coverImage(url: string, folder: Directory, index: number): Promis
 export async function exportCollectionPdf(expectedUserId: string): Promise<void> {
   if (!await Sharing.isAvailableAsync()) throw new Error('Compartilhamento indisponível.');
   if (await authenticatedUserId() !== expectedUserId) throw new Error('Sessão alterada.');
-  const records = await listCollectionItems();
+  const [records, boxes] = await Promise.all([listCollectionItems(), listCollectionBoxes()]);
+  if (await authenticatedUserId() !== expectedUserId || records.some(item => item.user_id !== expectedUserId) || boxes.some(item => item.user_id !== expectedUserId)) throw new Error('Sessão alterada.');
   const requests = photoCoverRequests(records, expectedUserId);
   const photos = requests.length ? await signedCopyPhotoCovers(expectedUserId, requests).catch(() => ({})) : {};
-  const items = exportItems(records.map(item => withPhotoCover(item, photos)));
+  const items = exportItems(records.map(item => withPhotoCover(item, photos)), boxes);
   const folder = new Directory(Paths.cache, `acervo-export-${Date.now()}`);
   folder.create();
   let pdf: File | undefined;
