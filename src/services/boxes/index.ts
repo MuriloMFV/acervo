@@ -2,8 +2,10 @@ import { getSupabaseClient } from '../supabase/client';
 import { authenticatedUserId, findOrCreateMovie } from '../collection';
 import { isCollectionItemId } from '../collection/mappers';
 import type { MovieDetails } from '../../types/movieSearch';
-import type { BoxFormValues, CollectionBoxRecord } from './types';
-import { parseBoxForm, validateBoxMovieIds } from './mappers';
+import type { BoxFormValues, BoxMovieSelection, CollectionBoxRecord } from './types';
+import { parseBoxForm } from './mappers';
+import { BoxChangedError, resolveBoxMovieIds, validateBoxSelection } from './editing';
+import { storedEditionCover } from '../covers/storage';
 const relations = '*,box_set:box_sets!inner(*,movies:box_set_movies(position,movie:movies!inner(*)))' as const;
 export async function listCollectionBoxes(signal?: AbortSignal): Promise<CollectionBoxRecord[]> {
   const userId = await authenticatedUserId();
@@ -26,17 +28,37 @@ export async function getCollectionBox(id: string, signal?: AbortSignal): Promis
   if (error) throw error;
   return data;
 }
-export async function createCollectionBox(form: BoxFormValues, movies: readonly MovieDetails[], expectedUserId: string): Promise<string> {
-  validateBoxMovieIds(movies.map(movie=>movie.id));
+async function prepareBoxSave(form: BoxFormValues, movies: readonly BoxMovieSelection[], expectedUserId: string, loadMovie: (id: string) => Promise<MovieDetails>, original?: CollectionBoxRecord) {
+  validateBoxSelection(movies);
   const {box,copy}=parseBoxForm(form);
+  if (original && original.user_id !== expectedUserId) throw new Error('Box indisponível.');
+  const existingIds = new Set(original?.box_set.movies.map(link => link.movie.id));
+  if (movies.some(movie => movie.storedMovieId && !existingIds.has(movie.storedMovieId))) throw new Error('Filme inválido. Reabra o box.');
   if (await authenticatedUserId()!==expectedUserId) throw new Error('Sessão alterada.');
-  // Reuse existing Movie creation/TMDB mapping, with no physical Edition per included film.
-  const movieIds: string[]=[];
-  for (const movie of movies) movieIds.push((await findOrCreateMovie(movie)).id);
+  if (box.cover_url && box.cover_url !== original?.box_set.cover_url) storedEditionCover(box.cover_url, getSupabaseClient().storage.from('edition-covers').getPublicUrl('').data.publicUrl);
+  const movieIds = await resolveBoxMovieIds(movies, async movie => {
+    if (await authenticatedUserId()!==expectedUserId) throw new Error('Sessão alterada.');
+    return (await findOrCreateMovie(await loadMovie(movie.id))).id;
+  });
   if (await authenticatedUserId()!==expectedUserId) throw new Error('Sessão alterada.');
+  return {box,copy,movieIds};
+}
+export async function createCollectionBox(form: BoxFormValues, movies: readonly BoxMovieSelection[], expectedUserId: string, loadMovie: (id: string) => Promise<MovieDetails>): Promise<string> {
+  const {box,copy,movieIds} = await prepareBoxSave(form,movies,expectedUserId,loadMovie);
   const {data,error}=await getSupabaseClient().rpc('create_collection_box',{
     p_expected_user_id:expectedUserId,p_box:box,p_movie_ids:movieIds,p_copy:copy,
   });
   if (error) throw error;
+  return data;
+}
+export async function editCollectionBox(original: CollectionBoxRecord, form: BoxFormValues, movies: readonly BoxMovieSelection[], expectedUserId: string, loadMovie: (id: string) => Promise<MovieDetails>): Promise<string> {
+  const {box,copy,movieIds} = await prepareBoxSave(form,movies,expectedUserId,loadMovie,original);
+  const {data,error} = await getSupabaseClient().rpc('edit_collection_box', {
+    p_item_id: original.id, p_expected_box_set_id: original.box_set_id,
+    p_expected_box_updated_at: original.box_set.updated_at, p_expected_copy_updated_at: original.updated_at,
+    p_box: box, p_copy: copy, p_movie_ids: movieIds,
+  });
+  if (error?.code === '40001') throw new BoxChangedError();
+  if (error) throw new Error('Não foi possível salvar o box. Confira a conexão e tente novamente.');
   return data;
 }

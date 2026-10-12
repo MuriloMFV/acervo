@@ -46,6 +46,8 @@ export default function BoxDetailsScreen() {
       ListHeaderComponent={<View style={styles.content}>
         <View style={styles.cover}>{cover?<Image accessibilityLabel={`Capa de ${set!.name}`} source={{uri:cover}} style={StyleSheet.absoluteFill} resizeMode="contain" />:<Film size={controls.iconSize} color={colors.textMuted} />}</View>
         <AppText variant="title">{set!.name}</AppText><View style={styles.header}><Badge label="BOX" tone="accent" /><AppText variant="caption" color="textSecondary">{movies.length} filmes</AppText></View>
+        {box.data.is_favorite && <Badge label="Favorito" tone="accent" />}
+        <ActionButton secondary label="Editar box" onPress={() => router.push({ pathname: '/boxes/edit', params: { id: box.data!.id } })} />
         <View style={styles.fields}>{fields.map(([label,value])=><View style={styles.field} key={label}><AppText variant="caption" color="textMuted">{label}</AppText>{label==='País'?<CountryDisplay value={set!.country} />:label==='Codificação'?<VideoStandardDisplay value={regionEncoding.videoStandard} />:label==='Distribuidora'?<DistributorDisplay value={set!.publisher} />:<AppText variant="label">{value}</AppText>}</View>)}</View>
         <AppText variant="heading">Filmes incluídos</AppText>
       </View>}

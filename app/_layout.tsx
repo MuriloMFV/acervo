@@ -83,6 +83,7 @@ function AppNavigation() {
           <Stack.Screen name="collection/edit" />
           <Stack.Screen name="collection/edition-edit" />
           <Stack.Screen name="boxes/[id]" />
+          <Stack.Screen name="boxes/edit" />
           <Stack.Screen name="account" />
           <Stack.Screen name="profile" />
           <Stack.Screen name="about" />

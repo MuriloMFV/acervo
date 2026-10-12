@@ -13,14 +13,12 @@ import { useCollection } from '../src/hooks/useCollection';
 import { useCollectionBoxes } from '../src/hooks/useCollectionBoxes';
 import { useProfile } from '../src/hooks/useProfile';
 import { useProfilePhoto } from '../src/hooks/useProfilePhoto';
-import { mapBoxCard } from '../src/services/boxes/mappers';
-import { mapCollectionCard } from '../src/services/collection/mappers';
 import { colors, radius, spacing } from '../src/theme';
 import { useCollectionFilters } from '../src/contexts/CollectionFiltersContext';
 import { CollectionFiltersPanel } from '../src/components/collection/CollectionFiltersPanel';
 import { applyCollectionFilters, availableCollectionFilters } from '../src/utils/collectionFilters';
 import { calculateCollectionStats } from '../src/utils/collectionStats';
-import { packagingLabels } from '../src/utils/collectionDetails';
+import { mergeCollectionItems } from '../src/utils/collectionItems';
 
 export default function CollectionScreen() {
   const router = useRouter();
@@ -40,19 +38,14 @@ export default function CollectionScreen() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [view, setView] = useState<CollectionView>('grid');
   const stats = useMemo(() => calculateCollectionStats(collection.data ?? []), [collection.data]);
-  const counts = { ALL: stats.total, ...stats.formats };
-  const boxCards = useMemo(() => (boxes.data ?? []).map(mapBoxCard), [boxes.data]);
-  const physicalCount = stats.total + (view === 'grid' ? boxCards.length : 0);
+  const physicalCount = stats.total + (boxes.data?.length ?? 0);
   const options = useMemo(() => availableCollectionFilters(collection.data ?? []), [collection.data]);
-  const items = useMemo(() => applyCollectionFilters(collection.data ?? [], search, filters).map(item => ({
-    ...mapCollectionCard(item),
-    editionLabel: item.edition.edition_name?.trim() || [
-      packagingLabels[item.edition.packaging_type],
-      item.edition.is_special_edition ? 'Especial' : null,
-      item.edition.is_limited_edition ? 'Limitada' : null,
-    ].filter(Boolean).join(' · '),
-  })), [collection.data, search, filters]);
-  const visibleCount = items.length + (view === 'grid' ? boxCards.length : 0);
+  const items = useMemo(() => mergeCollectionItems(
+    applyCollectionFilters(collection.data ?? [], search, filters),
+    (boxes.data ?? []).filter(item => item.box_set.name.toLocaleLowerCase('pt-BR').includes(search.trim().toLocaleLowerCase('pt-BR'))),
+    filters.sort,
+  ), [collection.data, boxes.data, search, filters]);
+  const visibleCount = items.length;
   const CollectionItems = view === 'list' ? MovieList : MovieGrid;
   useEffect(() => {
     if (!added) return;
@@ -66,7 +59,6 @@ export default function CollectionScreen() {
       <View style={[styles.content, view === 'grid' && styles.gridContent]}>
         <CollectionItems
           items={items}
-          boxes={view === 'grid' ? boxCards : undefined}
           sort={filters.sort}
           onItemPress={openItem}
           emptyState={collection.isPending ? <ActivityIndicator accessibilityLabel="Carregando coleção" color={colors.accent} /> : collection.isError ? (
@@ -74,14 +66,14 @@ export default function CollectionScreen() {
               <AppText color="textMuted">Não foi possível carregar a coleção</AppText>
               <ActionButton label="Tentar novamente" onPress={() => { void collection.refetch(); }} />
             </View>
-          ) : <VisualFeedback animation="film" loop={false} label={stats.total ? 'Nenhum item encontrado' : 'Nenhum item no Acervo'} />}
+          ) : <VisualFeedback animation="film" loop={false} label={physicalCount ? 'Nenhum item encontrado' : 'Nenhum item no Acervo'} />}
           header={
             <View style={[styles.header, view === 'grid' && styles.gridHeader]}>
               <CollectionHeader count={physicalCount} />
               <CollectionSearchBar value={search} onChangeText={setSearch} />
               <CollectionToolbar sort={filters.sort} onSortChange={(sort) => setFilters((current) => ({ ...current, sort }))} view={view} onViewChange={setView} filtersActive={active} onFiltersPress={() => { Keyboard.dismiss(); setFiltersOpen(true); }} />
-              {view === 'grid' && boxes.isPending && <ActivityIndicator accessibilityLabel="Carregando boxes" color={colors.accent} />}
-              {view === 'grid' && boxes.isError && <View style={styles.header}><AppText variant="caption" color="textMuted">Não foi possível carregar os boxes</AppText><ActionButton secondary label="Tentar novamente" onPress={() => { void boxes.refetch(); }} /></View>}
+              {boxes.isPending && <ActivityIndicator accessibilityLabel="Carregando boxes" color={colors.accent} />}
+              {boxes.isError && <View style={styles.header}><AppText variant="caption" color="textMuted">Não foi possível carregar os boxes</AppText><ActionButton secondary label="Tentar novamente" onPress={() => { void boxes.refetch(); }} /></View>}
             </View>
           }
           footer={visibleCount ? (
@@ -92,7 +84,7 @@ export default function CollectionScreen() {
           ) : undefined}
         />
       </View>
-      <BottomNavigation count={counts.ALL} onCollectionPress={() => { reset(); setView('grid'); }} onAddPress={() => router.navigate('/add')} onProfilePress={() => router.navigate('/profile')} />
+      <BottomNavigation count={physicalCount} onCollectionPress={() => { reset(); setView('grid'); }} onAddPress={() => router.navigate('/add')} onProfilePress={() => router.navigate('/profile')} />
       <SuccessFeedbackHost />
       {filtersOpen && <CollectionFiltersPanel filters={filters} options={options} onApply={(next) => { setFilters(next); setFiltersOpen(false); }} onClear={reset} onClose={() => setFiltersOpen(false)} />}
     </Screen>

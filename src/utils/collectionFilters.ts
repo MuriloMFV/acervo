@@ -41,9 +41,17 @@ function compareNullable(a: number | null, b: number | null, descending: boolean
   if (b === null) return -1;
   return descending ? b - a : a - b;
 }
-function addedTime(item: CollectionRecord): number | null {
-  const time = Date.parse(item.created_at);
-  return Number.isFinite(time) ? time : null;
+export interface CollectionSortValues {
+  id: string; title: string; year: number | null; price: number | null; createdAt: string;
+}
+export function compareCollectionItems(a: CollectionSortValues, b: CollectionSortValues, sort: CollectionSort): number {
+  const addedTime = (value: string) => { const time = Date.parse(value); return Number.isFinite(time) ? time : null; };
+  let order = 0;
+  if (sort === 'TITLE_ASC' || sort === 'TITLE_DESC') order = collectionCollator.compare(a.title, b.title) * (sort === 'TITLE_DESC' ? -1 : 1);
+  else if (sort === 'YEAR_ASC' || sort === 'YEAR_DESC') order = compareNullable(a.year, b.year, sort === 'YEAR_DESC');
+  else if (sort === 'PRICE_ASC' || sort === 'PRICE_DESC') order = compareNullable(a.price, b.price, sort === 'PRICE_DESC');
+  else order = compareNullable(addedTime(a.createdAt), addedTime(b.createdAt), sort === 'RECENT');
+  return order || compareLabels(a.title, b.title) || compareLabels(a.id, b.id);
 }
 export function applyCollectionFilters(items: readonly CollectionRecord[], search: string, filters: CollectionFilters): CollectionRecord[] {
   const text = search.trim().toLocaleLowerCase('pt-BR');
@@ -62,15 +70,8 @@ export function applyCollectionFilters(items: readonly CollectionRecord[], searc
     if (filters.specialOnly && !edition.is_special_edition && !edition.is_limited_edition) return false;
     return true;
   });
-  const sort = filters.sort;
-  return result.sort((a, b) => {
-    let order = 0;
-    if (sort === 'TITLE_ASC' || sort === 'TITLE_DESC') order = collectionCollator.compare(a.edition.movie.title, b.edition.movie.title) * (sort === 'TITLE_DESC' ? -1 : 1);
-    else if (sort === 'YEAR_ASC' || sort === 'YEAR_DESC') order = compareNullable(a.edition.movie.release_year, b.edition.movie.release_year, sort === 'YEAR_DESC');
-    else if (sort === 'PRICE_ASC' || sort === 'PRICE_DESC') order = compareNullable(a.purchase_price, b.purchase_price, sort === 'PRICE_DESC');
-    else order = compareNullable(addedTime(a), addedTime(b), sort === 'RECENT');
-    return order || compareLabels(a.edition.movie.title, b.edition.movie.title) || compareLabels(a.id, b.id);
-  });
+  const values = (item: CollectionRecord): CollectionSortValues => ({ id: item.id, title: item.edition.movie.title, year: item.edition.movie.release_year, price: item.purchase_price, createdAt: item.created_at });
+  return result.sort((a, b) => compareCollectionItems(values(a), values(b), filters.sort));
 }
 export function availableCollectionFilters(items: readonly CollectionRecord[]) {
   const genres = new Set<string>(); const regions = new Set<string>();

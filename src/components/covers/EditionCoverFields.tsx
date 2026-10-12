@@ -9,10 +9,10 @@ import { buildEditionCoverQuery } from '../../services/covers';
 import type { CoverSearchParams } from '../../types/covers';
 import { spacing } from '../../theme';
 
-export function EditionCoverFields({ customCoverUrl, backCoverUrl, fallbackCoverUrl, search, onChange, onBusyChange, disabled = false }: {
+export function EditionCoverFields({ customCoverUrl, backCoverUrl, fallbackCoverUrl, search, onChange, onBusyChange, disabled = false, showBackCover = true, imageLabel = 'Capa da edição' }: {
   customCoverUrl: string | null; backCoverUrl: string | null; fallbackCoverUrl: string | null; search: CoverSearchParams;
   onChange: (changes: { customCoverUrl?: string | null; backCoverUrl?: string | null }) => void;
-  onBusyChange?: (busy: boolean) => void; disabled?: boolean;
+  onBusyChange?: (busy: boolean) => void; disabled?: boolean; showBackCover?: boolean; imageLabel?: string;
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [frontBusy, setFrontBusy] = useState(false);
@@ -23,11 +23,11 @@ export function EditionCoverFields({ customCoverUrl, backCoverUrl, fallbackCover
   useEffect(() => () => { onBusyChange?.(false); }, [onBusyChange]);
 
   return <View style={styles.fields}>
-    <EditionImage key={frontCover} uri={frontCover} label="Capa da edição" />
+    <EditionImage key={frontCover} uri={frontCover} label={imageLabel} />
     <ActionButton secondary label="Buscar capa" disabled={disabled || busy} onPress={() => setPickerOpen(true)} />
     <EditionCoverPhotoButton side="front" value={customCoverUrl} label="Usar minha foto como capa" disabled={disabled || backBusy} onBusyChange={setFrontBusy} onSelect={url => onChange({ customCoverUrl: url })} />
     {customCoverUrl && <ActionButton secondary label="Usar capa padrão" disabled={disabled || busy} onPress={() => onChange({ customCoverUrl: null })} />}
-    <EditionBackCoverField value={backCoverUrl} onChange={url => onChange({ backCoverUrl: url })} onBusyChange={setBackBusy} search={search} disabled={disabled || frontBusy} />
+    {showBackCover && <EditionBackCoverField value={backCoverUrl} onChange={url => onChange({ backCoverUrl: url })} onBusyChange={setBackBusy} search={search} disabled={disabled || frontBusy} />}
     {pickerOpen && <EditionCoverPicker title={search.title} initialQuery={buildEditionCoverQuery(search)} onClose={() => setPickerOpen(false)} onSelect={url => { onChange({ customCoverUrl: url }); setPickerOpen(false); }} />}
   </View>;
 }

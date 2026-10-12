@@ -24,12 +24,15 @@ export function parseBoxForm(form: BoxFormValues): { box: BoxSetInput; copy: Box
       country: text(form.country), region: text(form.region), disc_count: parseDiscCount(form.discCount),
       ...(form.videoStandard === undefined ? {} : { video_standard: parseVideoStandard(form.videoStandard) }),
       is_special_edition: form.special, is_limited_edition: form.limited },
-    copy: parseCopyForm({ condition: form.condition, price: form.price, date: form.date, place: form.place, notes: form.notes }),
+    copy: parseCopyForm({ condition: form.condition, price: form.price, date: form.date, place: form.place, notes: form.notes, favorite: form.favorite }),
   };
 }
 export function validateBoxMovieIds(ids: readonly string[]): void {
   if (ids.length < 2 || ids.length > 100 || new Set(ids).size !== ids.length) throw new Error('Selecione de 2 a 100 filmes diferentes.');
-  if (ids.some(id => !/^[1-9]\d*$/.test(id) || !Number.isSafeInteger(Number(id)))) throw new Error('Filme inválido.');
+  if (ids.some(id => !isBoxMovieTmdbId(id))) throw new Error('Filme inválido.');
+}
+export function isBoxMovieTmdbId(id: string): boolean {
+  return /^[1-9]\d*$/.test(id) && Number.isSafeInteger(Number(id));
 }
 export function includedBoxMovies(box: CollectionBoxRecord) {
   return [...box.box_set.movies].sort((a, b) => a.position - b.position).map(link => link.movie);

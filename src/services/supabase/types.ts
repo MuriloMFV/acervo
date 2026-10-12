@@ -75,7 +75,7 @@ export type CollectionBoxRow = Timestamps & {
   notes: string | null; is_favorite: boolean;
 };
 export type BoxSetInput = Omit<BoxSetRow, keyof Timestamps | 'id' | 'created_by' | 'video_standard'> & { video_standard?: VideoStandard | null };
-export type BoxCopyInput = Pick<CollectionBoxRow, 'condition' | 'purchase_price' | 'purchase_date' | 'purchase_place' | 'notes'>;
+export type BoxCopyInput = Pick<CollectionBoxRow, 'condition' | 'purchase_price' | 'purchase_date' | 'purchase_place' | 'notes'> & Partial<Pick<CollectionBoxRow, 'is_favorite'>>;
 type Table<Row, Required extends keyof Row, Relationships extends object[] = []> = {
   Row: Row;
   Insert: Pick<Row, Required> & Partial<Omit<Row, Required>>;
@@ -97,6 +97,7 @@ export interface Database {
     Views: { [_ in never]: never };
     Functions: {
       create_collection_box: { Args: { p_expected_user_id: string; p_box: BoxSetInput; p_movie_ids: string[]; p_copy: BoxCopyInput }; Returns: string };
+      edit_collection_box: { Args: { p_item_id: string; p_expected_box_set_id: string; p_expected_box_updated_at: string; p_expected_copy_updated_at: string; p_box: BoxSetInput; p_movie_ids: string[]; p_copy: BoxCopyInput }; Returns: string };
       edit_collection_edition: { Args: { p_item_id: string; p_expected_edition_id: string; p_fields: { edition_name: string | null; publisher: string | null; country: string | null; region: string | null; disc_count: number | null; custom_cover_url: string | null; back_cover_url?: string | null; packaging_type?: PackagingType; video_standard?: VideoStandard | null; barcode?: string | null; expected_updated_at?: string } }; Returns: string }
     };
     Enums: { media_format: MediaFormat; packaging_type: PackagingType; item_condition: ItemCondition };

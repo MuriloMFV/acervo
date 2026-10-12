@@ -10,7 +10,6 @@ import { MovieCard } from './MovieCard';
 
 export interface MovieGridProps {
   items: readonly CollectionPreviewItem[];
-  boxes?: readonly CollectionPreviewItem[];
   sort?: CollectionSort;
   header?: ReactElement;
   footer?: ReactElement;
@@ -25,15 +24,9 @@ const sectionHeader = ({ section }: { section: MovieGridSection }) => section.la
   </View>
 );
 
-export const MovieGrid = forwardRef<SectionList<MovieGridRow, MovieGridSection>, MovieGridProps>(function MovieGrid({ items, boxes, sort = 'RECENT', header, footer, emptyState, onItemPress }, ref) {
+export const MovieGrid = forwardRef<SectionList<MovieGridRow, MovieGridSection>, MovieGridProps>(function MovieGrid({ items, sort = 'RECENT', header, footer, emptyState, onItemPress }, ref) {
   const [width, setWidth] = useState(0);
-  const sections = useMemo(() => {
-    const boxSections = collectionGridSections(boxes ?? [], 'RECENT').map(section => ({ ...section, key: `boxes:${section.key}`, label: 'Boxes' }));
-    const movieSections = collectionGridSections(items, sort).map(section =>
-      boxSections.length && section.label === null ? { ...section, label: 'Filmes' } : section,
-    );
-    return [...boxSections, ...movieSections];
-  }, [items, boxes, sort]);
+  const sections = useMemo(() => collectionGridSections(items, sort), [items, sort]);
   const cardWidth = Math.max(0, (width - spacing.sm * (movieLayout.columns - 1)) / movieLayout.columns);
   const renderItem = useCallback<SectionListRenderItem<MovieGridRow, MovieGridSection>>(
     ({ item: row }) => cardWidth > 0 ? <View style={styles.row}>{row.items.map(item => <MovieCard key={item.id} item={item} width={cardWidth} onPress={onItemPress} />)}</View> : null,

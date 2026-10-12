@@ -14,9 +14,9 @@ import { colors, spacing } from '../../theme';
 
 export type EditionMetadataValues = EditionFormValues & { isSpecialEdition?: boolean; isLimitedEdition?: boolean };
 
-export function EditionMetadataFields({ values, mediaFormat, onChange, disabled = false }: {
+export function EditionMetadataFields({ values, mediaFormat, onChange, disabled = false, showPackaging = true }: {
   values: EditionMetadataValues; mediaFormat: MediaFormat;
-  onChange: (changes: Partial<EditionMetadataValues>) => void; disabled?: boolean;
+  onChange: (changes: Partial<EditionMetadataValues>) => void; disabled?: boolean; showPackaging?: boolean;
 }) {
   const [scannerOpen, setScannerOpen] = useState(false);
   const field = (key: 'editionName' | 'publisher' | 'country' | 'region' | 'discCount' | 'barcode') => (text: string) => onChange({ [key]: text });
@@ -24,7 +24,7 @@ export function EditionMetadataFields({ values, mediaFormat, onChange, disabled 
     <FormField label="Nome da edição" value={values.editionName} onChangeText={field('editionName')} editable={!disabled} maxLength={200} />
     <FormField label="Código de barras" value={values.barcode ?? ''} onChangeText={field('barcode')} keyboardType="number-pad" autoCapitalize="none" autoCorrect={false} editable={!disabled} />
     <ActionButton secondary label="Escanear código de barras" disabled={disabled} onPress={() => setScannerOpen(true)} />
-    <PackagingSelector value={values.packagingType ?? 'STANDARD'} onChange={packagingType => onChange({ packagingType })} disabled={disabled} />
+    {showPackaging && <PackagingSelector value={values.packagingType ?? 'STANDARD'} onChange={packagingType => onChange({ packagingType })} disabled={disabled} />}
     <DistributorSelector value={values.publisher} onChange={field('publisher')} disabled={disabled} />
     <CountrySelector value={values.country} onChange={field('country')} disabled={disabled} />
     <RegionSelector value={values.region} videoStandard={values.videoStandard ?? null} mediaFormat={mediaFormat} onChange={onChange} disabled={disabled} />
