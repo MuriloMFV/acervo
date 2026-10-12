@@ -3,7 +3,7 @@ import type { CollectionItemDetailsPreview } from '../../types/collectionDetails
 import type { Database, EditionRow, ItemCondition, MediaFormat } from '../supabase/types';
 import type { CollectionRecord, CopyFormValues, CopyUpdate, MovieForCollection, NewEditionDetails } from './types';
 import type { KnownEdition } from '../../types/barcode';
-import { parseVideoStandard } from '../../utils/videoStandard.ts';
+import { parseEditionForm } from './editionEditing.ts';
 
 export function isCollectionItemId(id: string): boolean {
   return /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i.test(id);
@@ -39,19 +39,26 @@ export function editionPayload(movieId: string, format: MediaFormat): Database['
   return { movie_id: movieId, media_format: format, packaging_type: 'STANDARD', is_special_edition: false, is_limited_edition: false, barcode: null, product_image_url: null, custom_cover_url: null };
 }
 export function newEditionPayload(movieId: string, format: MediaFormat, details: NewEditionDetails): Database['public']['Tables']['editions']['Insert'] {
+  return { movie_id: movieId, ...newEditionFields(format, details) };
+}
+export function newEditionFields(format: MediaFormat, details: NewEditionDetails): Omit<Database['public']['Tables']['editions']['Insert'], 'movie_id'> {
+  const fields = parseEditionForm({
+    editionName: details.editionName ?? '', publisher: details.publisher ?? '', country: details.country ?? '', region: details.region ?? '',
+    discCount: details.discCount ?? '', customCoverUrl: details.customCoverUrl ?? null, backCoverUrl: details.backCoverUrl ?? null,
+    packagingType: details.packagingType ?? 'STANDARD', videoStandard: details.videoStandard, barcode: details.barcode,
+  });
   return {
-    ...editionPayload(movieId, format), packaging_type: details.packagingType ?? 'STANDARD', custom_cover_url: details.customCoverUrl ?? null,
-    ...(details.videoStandard === undefined ? {} : { video_standard: parseVideoStandard(details.videoStandard) }),
-    back_cover_url: details.backCoverUrl?.trim() || null,
-    edition_name: details.editionName?.trim() || null, publisher: details.publisher?.trim() || null,
-    region: details.region?.trim() || null, country: details.country?.trim() || null,
+    ...fields, media_format: format, barcode: fields.barcode ?? null, product_image_url: null,
+    is_special_edition: details.isSpecialEdition ?? false, is_limited_edition: details.isLimitedEdition ?? false,
   };
 }
 export function isStandardEdition(edition: EditionRow, movieId: string, format: MediaFormat): boolean {
   return edition.movie_id === movieId && edition.media_format === format && edition.packaging_type === 'STANDARD' && !edition.video_standard && !edition.is_special_edition && !edition.is_limited_edition && edition.barcode === null && edition.product_image_url === null && edition.custom_cover_url === null && !edition.back_cover_url?.trim() && edition.edition_name === null && edition.publisher === null && edition.region === null && edition.country === null && edition.disc_count === null && edition.release_year === null;
 }
-export function copyPayload(userId: string, editionId: string, condition: ItemCondition): Database['public']['Tables']['collection_items']['Insert'] {
-  return { user_id: userId, edition_id: editionId, condition, is_favorite: false, purchase_price: null, purchase_date: null, purchase_place: null, notes: null };
+export function copyPayload(userId: string, editionId: string, condition: ItemCondition, details?: CopyUpdate): Database['public']['Tables']['collection_items']['Insert'] {
+  return { user_id: userId, edition_id: editionId, condition, is_favorite: details?.is_favorite ?? false,
+    purchase_price: details?.purchase_price ?? null, purchase_date: details?.purchase_date ?? null,
+    purchase_place: details?.purchase_place ?? null, notes: details?.notes ?? null };
 }
 export function parseCopyForm(form: CopyFormValues): CopyUpdate {
   const amount = form.price.trim();

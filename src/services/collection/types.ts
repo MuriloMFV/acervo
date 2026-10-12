@@ -10,6 +10,8 @@ export interface NewEditionDetails {
   packagingType?: PackagingType;
   videoStandard?: VideoStandard | null;
   customCoverUrl?: string | null; backCoverUrl?: string | null;
+  barcode?: string; discCount?: string;
+  isSpecialEdition?: boolean; isLimitedEdition?: boolean;
 }
 export type CopyUpdate = Pick<CollectionItemRow, 'condition' | 'purchase_price' | 'purchase_date' | 'purchase_place' | 'notes'> & { is_favorite?: boolean; use_photo_as_cover?: boolean };
 export interface CopyFormValues {

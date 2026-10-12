@@ -2,7 +2,8 @@ import { getSupabaseClient } from '../supabase/client';
 import type { MediaFormat, ItemCondition } from '../supabase/types';
 import type { CollectionRecord, CopyUpdate, MovieForCollection, NewEditionDetails } from './types';
 export type { NewEditionDetails } from './types';
-import { copyPayload, editionPayload, newEditionPayload, isStandardEdition, isCollectionItemId, moviePayload } from './mappers';
+import { copyPayload, editionPayload, isStandardEdition, isCollectionItemId, moviePayload } from './mappers';
+import { prepareCollectionRegistration, persistCollectionRegistration, type NewCopyDetails } from './registration';
 import { reuseOrCreate } from './reuse';
 import { removeCopyPhoto } from '../photos';
 import { storedEditionCover } from '../covers/storage';
@@ -44,33 +45,41 @@ export async function findOrCreateMovie(movie: MovieForCollection) {
     insert: async () => { const { data, error } = await client.from('movies').insert(payload).select('*').single(); if (error) throw error; return data; },
   });
 }
-export async function createCollectionCopy(editionId: string, condition: ItemCondition, expectedUserId: string, notes: string | null = null) {
+export async function createCollectionCopy(editionId: string, condition: ItemCondition, expectedUserId: string, notes: string | null = null, details?: CopyUpdate) {
   const userId = await authenticatedUserId();
   if (userId !== expectedUserId) throw new Error('Sessão alterada.');
-  const { data, error } = await getSupabaseClient().from('collection_items').insert({ ...copyPayload(userId, editionId, condition), notes }).select('id').single();
+  const { data, error } = await getSupabaseClient().from('collection_items').insert({ ...copyPayload(userId, editionId, condition, details), notes: details === undefined ? notes : details.notes }).select('id').single();
   if (error) throw error;
   return data;
 }
-export async function createCollectionItem(movie: MovieForCollection, format: MediaFormat, condition: ItemCondition, details: NewEditionDetails = {}) {
+export async function createCollectionItem(movie: MovieForCollection, format: MediaFormat, condition: ItemCondition, details: NewEditionDetails = {}, copyDetails: NewCopyDetails = {}) {
+  // Validate the whole form before creating Movie, Edition or CollectionItem rows.
+  const prepared = prepareCollectionRegistration(format, condition, details, copyDetails);
   const userId = await authenticatedUserId();
   const client = getSupabaseClient();
-  const backCoverUrl = storedEditionCover(details.backCoverUrl, client.storage.from('edition-covers').getPublicUrl('').data.publicUrl);
-  const savedMovie = await findOrCreateMovie(movie);
-  // Non-default metadata or a custom cover identifies a new edition; never update a shared row.
-  if (details.videoStandard || (details.packagingType && details.packagingType !== 'STANDARD') || details.customCoverUrl || backCoverUrl || [details.editionName, details.publisher, details.region, details.country].some(value => value?.trim())) {
-    const { data, error } = await client.from('editions').insert(newEditionPayload(savedMovie.id, format, { ...details, backCoverUrl })).select('id').single();
-    if (error) throw error;
-    return createCollectionCopy(data.id, condition, userId);
-  }
-  const edition = await reuseOrCreate({
-    find: async () => {
-      const { data, error } = await client.from('editions').select('*').eq('movie_id', savedMovie.id).eq('media_format', format).eq('packaging_type', 'STANDARD').eq('is_special_edition', false).eq('is_limited_edition', false).is('barcode', null).is('custom_cover_url', null).is('back_cover_url', null).is('product_image_url', null).is('edition_name', null).is('publisher', null).is('region', null).is('video_standard', null).is('country', null).is('disc_count', null).is('release_year', null).order('created_at').limit(1);
-      if (error) throw error;
-      return data.find((row) => isStandardEdition(row, savedMovie.id, format)) ?? null;
+  const bucketUrl = client.storage.from('edition-covers').getPublicUrl('').data.publicUrl;
+  prepared.edition.custom_cover_url = storedEditionCover(prepared.edition.custom_cover_url, bucketUrl);
+  prepared.edition.back_cover_url = storedEditionCover(prepared.edition.back_cover_url, bucketUrl);
+  return persistCollectionRegistration(movie, prepared, {
+    movie: findOrCreateMovie,
+    edition: async (movieId, fields) => {
+      // Metadata identifies a distinct physical edition; shared catalog rows stay intact.
+      if (fields.video_standard || fields.packaging_type !== 'STANDARD' || fields.is_special_edition || fields.is_limited_edition || fields.barcode || fields.disc_count != null || fields.custom_cover_url || fields.back_cover_url || [fields.edition_name, fields.publisher, fields.region, fields.country].some(value => value?.trim())) {
+        const { data, error } = await client.from('editions').insert({ ...fields, movie_id: movieId }).select('id').single();
+        if (error) throw error;
+        return data;
+      }
+      return reuseOrCreate({
+        find: async () => {
+          const { data, error } = await client.from('editions').select('*').eq('movie_id', movieId).eq('media_format', format).eq('packaging_type', 'STANDARD').eq('is_special_edition', false).eq('is_limited_edition', false).is('barcode', null).is('custom_cover_url', null).is('back_cover_url', null).is('product_image_url', null).is('edition_name', null).is('publisher', null).is('region', null).is('video_standard', null).is('country', null).is('disc_count', null).is('release_year', null).order('created_at').limit(1);
+          if (error) throw error;
+          return data.find((row) => isStandardEdition(row, movieId, format)) ?? null;
+        },
+        insert: async () => { const { data, error } = await client.from('editions').insert(editionPayload(movieId, format)).select('*').single(); if (error) throw error; return data; },
+      });
     },
-    insert: async () => { const { data, error } = await client.from('editions').insert(editionPayload(savedMovie.id, format)).select('*').single(); if (error) throw error; return data; },
+    copy: (editionId, fields) => createCollectionCopy(editionId, condition, userId, fields.notes, fields),
   });
-  return createCollectionCopy(edition.id, condition, userId);
 }
 export async function updateCollectionItem(id: string, payload: CopyUpdate) {
   const userId = await authenticatedUserId();

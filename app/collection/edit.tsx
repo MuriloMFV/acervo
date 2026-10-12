@@ -5,13 +5,11 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleShe
 import { AppText, Screen } from '../../src/components/ui';
 import { useSuccessFeedback } from '../../src/components/visual/SuccessFeedback';
 import { ActionButton } from '../../src/components/ui/ActionButton';
-import { FormField } from '../../src/components/ui/FormField';
-import { ConditionSelector } from '../../src/components/collection/ConditionSelector';
 import { useCollectionItem } from '../../src/hooks/useCollection';
 import { useSession } from '../../src/contexts/SessionContext';
 import { queryKeys } from '../../src/lib/queryClient';
 import { saveCopyChanges } from '../../src/services/collection/editing';
-import { PurchaseDateField } from '../../src/components/ui/PurchaseDateField';
+import { CopyFields } from '../../src/components/collection/CopyFields';
 import { CopyPhoto } from '../../src/components/collection/CopyPhoto';
 import type { PhotoDraft } from '../../src/services/photos/validation';
 import { parseCopyForm } from '../../src/services/collection/mappers';
@@ -47,7 +45,6 @@ function CopyForm({ item, onBack }: { item: CollectionRecord; onBack: () => void
       if (result.cleanupPending) console.warn('Foto anterior desvinculada; limpeza do Storage pendente.'); await cache.invalidateQueries({ queryKey: queryKeys.collection(session!.user.id) }); showSuccess(); onBack(); },
   });
   const hasPhoto = photo.action === 'replace' || photo.action === 'keep' && !!item.photo_url;
-  const field = (key: 'price' | 'date' | 'place' | 'notes') => (text: string) => setValues((previous) => ({ ...previous, [key]: text }));
   const submit = () => {
     if (save.isPending || pickingPhoto) return;
     setError('');
@@ -57,12 +54,7 @@ function CopyForm({ item, onBack }: { item: CollectionRecord; onBack: () => void
     <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
       <AppText variant="heading">Editar minha cópia</AppText>
       <AppText color="textMuted">{item.edition.movie.title}</AppText>
-      <ConditionSelector value={values.condition} onChange={(condition) => setValues((previous) => ({ ...previous, condition }))} disabled={save.isPending} />
-      <FormField label="Preço pago" value={values.price} onChangeText={field('price')} keyboardType="decimal-pad" editable={!save.isPending} />
-      <PurchaseDateField value={values.date} onChange={field('date')} disabled={save.isPending} />
-      <FormField label="Local de compra" value={values.place} onChangeText={field('place')} editable={!save.isPending} />
-      <FormField label="Observações" value={values.notes} onChangeText={field('notes')} multiline editable={!save.isPending} />
-      <View style={styles.favorite}><AppText variant="label">Favorito</AppText><Switch accessibilityLabel="Favorito" value={values.favorite} disabled={save.isPending} onValueChange={favorite => setValues(previous => ({ ...previous, favorite }))} trackColor={{ false: colors.border, true: colors.primary }} thumbColor={colors.text} /></View>
+      <CopyFields values={values} onChange={changes => setValues(previous => ({ ...previous, ...changes }))} disabled={save.isPending} />
       <CopyPhoto itemId={item.id} path={item.photo_url ?? null} draft={photo} onChange={setPhoto} onBusyChange={setPickingPhoto} disabled={save.isPending} />
       {hasPhoto && <View style={styles.favorite}>
         <AppText variant="label" style={styles.toggleLabel}>Usar minha foto como capa</AppText>
