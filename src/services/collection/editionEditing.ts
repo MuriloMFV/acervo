@@ -2,8 +2,17 @@ import type { EditionRow, PackagingType } from '../supabase/types.ts';
 import { packagingLabels } from '../../utils/collectionDetails.ts';
 import type { VideoStandard } from '../../types/videoStandard';
 import { parseVideoStandard } from '../../utils/videoStandard.ts';
-export interface EditionFormValues { editionName: string; publisher: string; country: string; region: string; discCount: string; customCoverUrl: string | null; backCoverUrl?: string | null; packagingType?: PackagingType; videoStandard?: VideoStandard | null }
-export type EditionEdit = Pick<EditionRow, 'edition_name' | 'publisher' | 'country' | 'region' | 'disc_count' | 'custom_cover_url'> & Partial<Pick<EditionRow, 'back_cover_url' | 'packaging_type' | 'video_standard'>>;
+import { validatedBarcode } from '../../utils/barcode.ts';
+import { capturedBarcode } from '../../utils/barcodeScanner.ts';
+export interface EditionFormValues { editionName: string; publisher: string; country: string; region: string; discCount: string; customCoverUrl: string | null; backCoverUrl?: string | null; packagingType?: PackagingType; videoStandard?: VideoStandard | null; barcode?: string; expectedUpdatedAt?: string }
+export type EditionEdit = Pick<EditionRow, 'edition_name' | 'publisher' | 'country' | 'region' | 'disc_count' | 'custom_cover_url'> & Partial<Pick<EditionRow, 'back_cover_url' | 'packaging_type' | 'video_standard' | 'barcode'>> & { expected_updated_at?: string };
+export class EditionChangedError extends Error {
+  constructor() { super('A edição mudou. Reabra os detalhes antes de salvar.'); this.name = 'EditionChangedError'; }
+}
+export function applyScannedEditionBarcode<T extends EditionFormValues>(form: T, value: string | string[] | undefined): T {
+  const barcode = capturedBarcode(value);
+  return barcode ? { ...form, barcode } : form;
+}
 export function parseDiscCount(value: string): number | null {
   const text = value.trim();
   if (!text) return null;
@@ -13,7 +22,17 @@ export function parseDiscCount(value: string): number | null {
 export function parseEditionForm(form: EditionFormValues): EditionEdit {
   const text = (value: string) => { const result = value.trim(); if (result.length > 200) throw new Error('Use até 200 caracteres por campo.'); return result || null; };
   if (form.packagingType !== undefined && !Object.hasOwn(packagingLabels, form.packagingType)) throw new Error('Selecione um tipo de capa válido.');
-  return { edition_name: text(form.editionName), publisher: text(form.publisher), country: text(form.country), region: text(form.region), disc_count: parseDiscCount(form.discCount), custom_cover_url: form.customCoverUrl?.trim() || null, ...(form.backCoverUrl === undefined ? {} : { back_cover_url: form.backCoverUrl?.trim() || null }), ...(form.packagingType === undefined ? {} : { packaging_type: form.packagingType }), ...(form.videoStandard === undefined ? {} : { video_standard: parseVideoStandard(form.videoStandard) }) };
+  return {
+    edition_name: text(form.editionName), publisher: text(form.publisher), country: text(form.country), region: text(form.region),
+    disc_count: parseDiscCount(form.discCount), custom_cover_url: form.customCoverUrl?.trim() || null,
+    ...(form.backCoverUrl === undefined ? {} : { back_cover_url: form.backCoverUrl?.trim() || null }),
+    ...(form.packagingType === undefined ? {} : { packaging_type: form.packagingType }),
+    ...(form.videoStandard === undefined ? {} : { video_standard: parseVideoStandard(form.videoStandard) }),
+    ...(form.barcode === undefined ? {} : {
+      barcode: form.barcode.trim() ? validatedBarcode(form.barcode) : null,
+      ...(form.expectedUpdatedAt === undefined ? {} : { expected_updated_at: form.expectedUpdatedAt }),
+    }),
+  };
 }
 export function discCountLabel(value: number | null | undefined): string | null {
   return value == null ? null : `${value} ${value === 1 ? 'disco' : 'discos'}`;

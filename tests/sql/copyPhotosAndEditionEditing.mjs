@@ -11,12 +11,13 @@ const path=`${a}/${ia}/photo-55555555-5555-4555-8555-555555555555.jpg`;
 let checks=0;
 const query = async (sql, values=[]) => (await db.query(sql,values)).rows;
 const check = (actual, expected) => { assert.deepEqual(actual,expected); checks++; };
-async function denied(sql, values=[]) {
+async function denied(sql, values=[], code) {
   await db.exec('begin; savepoint rejected;');
-  let rejected=false;
-  try { await db.query(sql,values); } catch { rejected=true; }
+  let rejected=false, rejectedCode;
+  try { await db.query(sql,values); } catch (error) { rejected=true; rejectedCode=error.code; }
   await db.exec('rollback to rejected; commit;');
   check(rejected,true);
+  if (code) check(rejectedCode,code);
 }
 const login = async (uid, anonymous=false) => {
   await db.exec('reset role');
@@ -48,6 +49,7 @@ try {
   await db.exec(await readFile(new URL('../../supabase/migrations/20261010002750_edition_back_cover.sql',import.meta.url),'utf8'));
   await db.exec(await readFile(new URL('../../supabase/migrations/20261010021419_edition_cover_types.sql',import.meta.url),'utf8'));
   await db.exec(await readFile(new URL('../../supabase/migrations/20261010025750_edition_video_standard.sql',import.meta.url),'utf8'));
+  await db.exec(await readFile(new URL('../../supabase/migrations/20261012194452_edition_barcode_editing.sql',import.meta.url),'utf8'));
   check((await query('select back_cover_url from public.editions where id=$1',[edition]))[0].back_cover_url,null);
   check((await query("select public,file_size_limit,allowed_mime_types from storage.buckets where id='copy-photos'"))[0], {public:false,file_size_limit:5242880,allowed_mime_types:['image/jpeg','image/png','image/webp']});
   check((await query('select use_photo_as_cover from public.collection_items where id=$1',[ia]))[0].use_photo_as_cover,false);
@@ -213,6 +215,76 @@ try {
   check((await query('select video_standard from public.editions where id=$1',[withBack]))[0].video_standard,null);
   await login(a,true);
   await denied(rpc,[ia,removedEncoding,JSON.stringify({...encodingFields,video_standard:'NTSC'})]);
+  // Barcode-aware forms edit the same Edition atomically; legacy tests above
+  // still exercise the previous copy-on-write path through the same public RPC.
+  await login(a);
+  const barcodeEdition=(await query('select * from public.editions where id=$1',[removedEncoding]))[0];
+  const barcodeFields={edition_name:barcodeEdition.edition_name,publisher:barcodeEdition.publisher,
+    country:barcodeEdition.country,region:barcodeEdition.region,disc_count:barcodeEdition.disc_count,
+    custom_cover_url:barcodeEdition.custom_cover_url,back_cover_url:barcodeEdition.back_cover_url,
+    packaging_type:barcodeEdition.packaging_type,video_standard:barcodeEdition.video_standard};
+  const editionCount=async()=>(await query('select count(*)::integer as n from public.editions'))[0].n;
+  const editionSnapshot=async()=>(await query("select to_jsonb(e)-'updated_at' as data from public.editions e where id=$1",[removedEncoding]))[0].data;
+  const stamp=async()=>(await query('select updated_at::text as value from public.editions where id=$1',[removedEncoding]))[0].value;
+  const currentFields=async(barcode)=>({...barcodeFields,barcode,expected_updated_at:await stamp()});
+  const beforeCount=await editionCount();
+  const beforeBarcode=await editionSnapshot();
+  const beforeCopy=(await query('select to_jsonb(ci) as data from public.collection_items ci where id=$1',[ia]))[0].data;
+  // Another copy owned by the same user keeps its Edition link.
+  const sameUserCopy=(await query("insert into public.collection_items(user_id,edition_id,condition) values ($1,$2,'SEALED') returning id",[a,removedEncoding]))[0].id;
+  for (const [value,expected] of [[null,null],[' EAN: 0012-3456-78905 ','0012345678905'],['012345678905','012345678905'],['96385074','96385074'],[null,null]]) {
+    check((await query(rpc,[ia,removedEncoding,JSON.stringify(await currentFields(value))]))[0].id,removedEncoding);
+    check(await editionCount(),beforeCount);
+    check(await editionSnapshot(),{...beforeBarcode,barcode:expected});
+    check((await query('select to_jsonb(ci) as data from public.collection_items ci where id=$1',[ia]))[0].data,beforeCopy);
+    check((await query('select edition_id from public.collection_items where id=$1',[sameUserCopy]))[0].edition_id,removedEncoding);
+  }
+  for (const barcode of ['1234567','123456789','00123456789056','text','---',42,[],{}]) {
+    await denied(rpc,[ia,removedEncoding,JSON.stringify(await currentFields(barcode))],'22023');
+  }
+  await denied(rpc,[ia,removedEncoding,JSON.stringify({...await currentFields('96385074'),movie_id:movie})],'22023');
+  for (const invalid of [{custom_cover_url:'https://external.test/front.jpg'}, {back_cover_url:'https://external.test/back.jpg'}, {custom_cover_url:coverUrl.replace(coverKey,`${b}/66666666-6666-4666-8666-666666666666.jpg`)}, {packaging_type:'OTHER'}, {video_standard:'UNKNOWN'}]) {
+    await denied(rpc,[ia,removedEncoding,JSON.stringify({...await currentFields('96385074'),...invalid})],'22023');
+  }
+  const {expected_updated_at:omitted,...missingStamp}=await currentFields('96385074');
+  await denied(rpc,[ia,removedEncoding,JSON.stringify(missingStamp)],'22023');
+  const staleBarcodeFields=await currentFields('96385074');
+  check((await query(rpc,[ia,removedEncoding,JSON.stringify(staleBarcodeFields)]))[0].id,removedEncoding);
+  await denied(rpc,[ia,removedEncoding,JSON.stringify({...staleBarcodeFields,barcode:'012345678905'})],'40001');
+  await denied(rpc,[ia,edition,JSON.stringify(await currentFields('012345678905'))],'40001');
+  // Barcode and explicitly changed metadata stay on the current row in one write.
+  const editFields={...await currentFields('012345678905'),publisher:'Sony',country:'Japão'};
+  check((await query(rpc,[ia,removedEncoding,JSON.stringify(editFields)]))[0].id,removedEncoding);
+  check(await editionSnapshot(),{...beforeBarcode,barcode:'012345678905',publisher:'Sony',country:'Japão'});
+  check(await editionCount(),beforeCount);
+  await denied("update public.editions set barcode='96385074' where id=$1",[removedEncoding],'42501');
+  await denied(rpc,[ib,edition,JSON.stringify(editFields)],'42501');
+  await denied('select acervo_private.update_collection_edition_current($1,$2,$3::jsonb)',[ib,edition,JSON.stringify(editFields)],'42501');
+  // RLS hides other users' copies, so sharing protection must check globally.
+  await login(b);
+  await query("insert into public.collection_items(user_id,edition_id,condition) values ($1,$2,'GOOD')",[b,removedEncoding]);
+  await login(a);
+  const sharedFields={...await currentFields('96385074'),publisher:'Sony',country:'Japão'};
+  await denied(rpc,[ia,removedEncoding,JSON.stringify(sharedFields)],'55000');
+  check(await editionCount(),beforeCount);
+  check((await query('select barcode from public.editions where id=$1',[removedEncoding]))[0].barcode,'012345678905');
+  check((await query('select to_jsonb(ci) as data from public.collection_items ci where id=$1',[ia]))[0].data,beforeCopy);
+  // An unchanged shared edition may be saved safely, without cloning it.
+  check((await query(rpc,[ia,removedEncoding,JSON.stringify({...sharedFields,barcode:'012345678905'})]))[0].id,removedEncoding);
+  await login(a,true);
+  await denied(rpc,[ia,removedEncoding,JSON.stringify(sharedFields)],'42501');
+  await login('');
+  await denied(rpc,[ia,removedEncoding,JSON.stringify(sharedFields)],'42501');
+  await db.exec('reset role');
+  // Local security audit: only the private guarded updater is privileged.
+  check((await query("select prosecdef from pg_proc where oid='public.edit_collection_edition(uuid,uuid,jsonb)'::regprocedure"))[0].prosecdef,false);
+  check((await query("select prosecdef from pg_proc where oid='acervo_private.update_collection_edition_current(uuid,uuid,jsonb)'::regprocedure"))[0].prosecdef,true);
+  check((await query("select proconfig from pg_proc where oid='acervo_private.update_collection_edition_current(uuid,uuid,jsonb)'::regprocedure"))[0].proconfig,['search_path=""']);
+  check((await query("select has_table_privilege('authenticated','public.editions','UPDATE') as allowed"))[0].allowed,false);
+  for (const fn of ['public.edit_collection_edition','acervo_private.update_collection_edition_current','acervo_private.clone_collection_edition']) {
+    check((await query('select has_function_privilege($1,$2,$3) as allowed',['anon',`${fn}(uuid,uuid,jsonb)`,'EXECUTE']))[0].allowed,false);
+    check((await query('select has_function_privilege($1,$2,$3) as allowed',['authenticated',`${fn}(uuid,uuid,jsonb)`,'EXECUTE']))[0].allowed,true);
+  }
   await db.exec('reset role; set role anon');
   await denied(rpc,[ia,cloned,JSON.stringify(fields)]);
   console.log(`Migration + RLS: ${checks} assertions passed (isolated PostgreSQL, two owners and anonymous roles).`);
