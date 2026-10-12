@@ -5,11 +5,11 @@ import Film from 'lucide-react-native/icons/film';
 import { colors, controls } from '../../theme';
 import { editionCoverFlipFaces } from '../../utils/editionCoverFlip';
 
-type Props = { front: ImageSourcePropType | null; back?: ImageSourcePropType | null; title: string; style: StyleProp<ViewStyle> };
+type Props = { front: ImageSourcePropType | null; back?: ImageSourcePropType | null; title: string; style: StyleProp<ViewStyle>; resizeMode?: 'cover' | 'contain' };
 
-export function EditionCoverFlip({ front, back, title, style }: Props) {
+export function EditionCoverFlip({ front, back, title, style, resizeMode = 'cover' }: Props) {
   if (!back) return <View style={style}>
-    {front ? <Image source={front} resizeMode="cover" resizeMethod="resize" style={styles.image} /> : <Film size={controls.iconSize} color={colors.textMuted} />}
+    {front ? <Image accessibilityLabel={`Capa de ${title}`} source={front} resizeMode={resizeMode} resizeMethod="resize" style={styles.image} /> : <Film size={controls.iconSize} color={colors.textMuted} />}
   </View>;
   return <FlippableCover key={JSON.stringify([front, back])} front={front} back={back} title={title} style={style} />;
 }

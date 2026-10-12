@@ -36,6 +36,9 @@ async function prepareBoxSave(form: BoxFormValues, movies: readonly BoxMovieSele
   if (movies.some(movie => movie.storedMovieId && !existingIds.has(movie.storedMovieId))) throw new Error('Filme inválido. Reabra o box.');
   if (await authenticatedUserId()!==expectedUserId) throw new Error('Sessão alterada.');
   if (box.cover_url && box.cover_url !== original?.box_set.cover_url) storedEditionCover(box.cover_url, getSupabaseClient().storage.from('edition-covers').getPublicUrl('').data.publicUrl);
+  if (box.back_cover_url) storedEditionCover(box.back_cover_url, getSupabaseClient().storage.from('edition-covers').getPublicUrl('').data.publicUrl);
+  // Omit an unchanged optional field; only an explicit removal sends null.
+  if (box.back_cover_url === (original?.box_set.back_cover_url ?? null)) delete box.back_cover_url;
   const movieIds = await resolveBoxMovieIds(movies, async movie => {
     if (await authenticatedUserId()!==expectedUserId) throw new Error('Sessão alterada.');
     return (await findOrCreateMovie(await loadMovie(movie.id))).id;

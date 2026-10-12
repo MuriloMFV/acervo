@@ -63,7 +63,7 @@ type Relation<Name extends string, Column extends string, Target extends string>
   referencedRelation: Target; referencedColumns: ['id'];
 };
 export type BoxSetRow = Timestamps & {
-  id: string; created_by: string; name: string; barcode: string | null; cover_url: string | null;
+  id: string; created_by: string; name: string; barcode: string | null; cover_url: string | null; back_cover_url: string | null;
   media_format: MediaFormat; edition_name: string | null; publisher: string | null;
   country: string | null; region: string | null; video_standard: VideoStandard | null; disc_count: number | null;
   is_special_edition: boolean; is_limited_edition: boolean;
@@ -74,7 +74,7 @@ export type CollectionBoxRow = Timestamps & {
   purchase_price: number | null; purchase_date: string | null; purchase_place: string | null;
   notes: string | null; is_favorite: boolean;
 };
-export type BoxSetInput = Omit<BoxSetRow, keyof Timestamps | 'id' | 'created_by' | 'video_standard'> & { video_standard?: VideoStandard | null };
+export type BoxSetInput = Omit<BoxSetRow, keyof Timestamps | 'id' | 'created_by' | 'video_standard' | 'back_cover_url'> & { video_standard?: VideoStandard | null; back_cover_url?: string | null };
 export type BoxCopyInput = Pick<CollectionBoxRow, 'condition' | 'purchase_price' | 'purchase_date' | 'purchase_place' | 'notes'> & Partial<Pick<CollectionBoxRow, 'is_favorite'>>;
 type Table<Row, Required extends keyof Row, Relationships extends object[] = []> = {
   Row: Row;

@@ -9,6 +9,7 @@ export function boxFormValues(item?: CollectionBoxRecord): BoxFormValues {
   const box = item?.box_set;
   return {
     name: box?.name ?? '', mediaFormat: box?.media_format ?? 'DVD', barcode: box?.barcode ?? '', coverUrl: box?.cover_url ?? '',
+    backCoverUrl: box?.back_cover_url ?? null,
     editionName: box?.edition_name ?? '', publisher: box?.publisher ?? '', country: box?.country ?? '', region: box?.region ?? '',
     videoStandard: box?.video_standard ?? null, discCount: box?.disc_count?.toString() ?? '',
     special: box?.is_special_edition ?? false, limited: box?.is_limited_edition ?? false,

@@ -126,5 +126,56 @@ try {
   check(routines.length,4);
   for (const routine of routines) { check(routine.anon_execute,false);check(routine.authenticated_execute,true);check(routine.config,['search_path=""']);check(routine.definer,routine.name==='update_collection_box'); }
   check((await query("select count(*)::integer as n from storage.objects where bucket_id='edition-covers'"))[0].n,3);
+  // Add the new migration after the existing suite, preserving all legacy expectations.
+  await db.exec(await readFile(new URL('../../supabase/migrations/20261012213154_box_back_cover.sql',import.meta.url),'utf8'));
+  await login(a);
+  check((await draft()).box.back_cover_url,null);
+  const frontBefore=(await draft()).box.cover_url;
+  const boxCountBefore=(await snapshot()).counts;
+  await query(edit,await args({back_cover_url:cover1},[m3,m1]));
+  check((await draft()).box.back_cover_url,cover1);
+  check((await draft()).box.cover_url,frontBefore);
+  check((await draft()).box_set_id,boxId);check((await draft()).id,id);
+  const legacyEdit=await args({name:'Nome atualizado'},[m3,m1]);
+  const legacyBox=JSON.parse(legacyEdit[4]);delete legacyBox.back_cover_url;
+  legacyEdit[4]=JSON.stringify(legacyBox);
+  await query(edit,legacyEdit);check((await draft()).box.back_cover_url,cover1);
+  await query(edit,await args({back_cover_url:cover2},[m3,m1]));
+  check((await draft()).box.back_cover_url,cover2);
+  const withBack=await snapshot();
+  for(const invalid of ['https://outside.test/back.jpg',cover1+'#bad',`https://supabase.test/storage/v1/object/public/edition-covers/${foreignFile}`,
+    `https://supabase.test/storage/v1/object/public/edition-covers/${a}/99999999-9999-4999-8999-999999999999.jpg`,42,{},'x'.repeat(2049)]) {
+    await rejected(edit,await args({name:'Não deve persistir',back_cover_url:invalid},[m2,m1]));
+    check(await snapshot(),withBack);
+  }
+  const foreignEdit=await args({back_cover_url:null},[m3,m1]);
+  await login(b);await rejected(edit,foreignEdit,'42501');
+  await login('', 'anon');await rejected(edit,foreignEdit,'42501');
+  await login(a,'authenticated',{is_anonymous:true});await rejected(edit,foreignEdit,'42501');
+  await login(a);check(await snapshot(),withBack);
+  await query(edit,await args({back_cover_url:null},[m3,m1]));check((await draft()).box.back_cover_url,null);
+  check((await draft()).box.cover_url,frontBefore);check((await snapshot()).counts,boxCountBefore);
+  const legacyId=(await query(create,[a,JSON.stringify(minimal),[m1,m2],JSON.stringify(personal)]))[0].id;
+  check((await query('select bs.back_cover_url from public.collection_boxes cb join public.box_sets bs on bs.id=cb.box_set_id where cb.id=$1',[legacyId]))[0].back_cover_url,null);
+  const backId=(await query(create,[a,JSON.stringify({...minimal,back_cover_url:cover1}),[m2,m1],JSON.stringify({...personal,is_favorite:true})]))[0].id;
+  const created=(await query('select cb.id,cb.box_set_id,cb.condition,cb.is_favorite,bs.back_cover_url,bs.cover_url from public.collection_boxes cb join public.box_sets bs on bs.id=cb.box_set_id where cb.id=$1',[backId]))[0];
+  check(created.back_cover_url,cover1);check(created.cover_url,null);check(created.condition,'VERY_GOOD');check(created.is_favorite,true);
+  check(await query('select movie_id,position from public.box_set_movies where box_set_id=$1 order by position',[created.box_set_id]),[{movie_id:m2,position:1},{movie_id:m1,position:2}]);
+  const afterCreated=await snapshot();
+  for(const invalid of ['https://outside.test/back.jpg',cover1+'?bad=1',`https://supabase.test/storage/v1/object/public/edition-covers/${foreignFile}`,42,{},'x'.repeat(2049)]) {
+    await rejected(create,[a,JSON.stringify({...minimal,back_cover_url:invalid}),[m1,m2],JSON.stringify(personal)]);
+    check(await snapshot(),afterCreated); // creation must roll back BoxSet, links and copy
+  }
+  const backVersions=await query('select bs.updated_at::text as box_version,cb.updated_at::text as copy_version from public.collection_boxes cb join public.box_sets bs on bs.id=cb.box_set_id where cb.id=$1',[backId]);
+  const createdBox=(await query("select to_jsonb(bs)-array['id','created_by','created_at','updated_at'] as fields from public.box_sets bs where bs.id=$1",[created.box_set_id]))[0].fields;
+  check((await query(edit,[backId,created.box_set_id,backVersions[0].box_version,backVersions[0].copy_version,JSON.stringify({...createdBox,back_cover_url:null}),[m2,m1],JSON.stringify(personal)]))[0].id,backId);
+  check((await query('select back_cover_url from public.box_sets where id=$1',[created.box_set_id]))[0].back_cover_url,null);
+  await db.exec('reset role');
+  check((await query("select count(*)::integer as n from storage.objects where bucket_id='edition-covers'"))[0].n,3);
+  check((await query("select has_table_privilege('authenticated','public.box_sets','UPDATE') as allowed"))[0].allowed,false);
+  check((await query("select has_function_privilege('anon','public.create_collection_box(uuid,jsonb,uuid[],jsonb)','execute') as allowed"))[0].allowed,false);
+  check((await query("select has_function_privilege('anon','acervo_private.update_collection_box(uuid,uuid,timestamptz,timestamptz,jsonb,uuid[],jsonb)','execute') as allowed"))[0].allowed,false);
+  check((await query("select prosecdef,proconfig from pg_proc where oid='acervo_private.update_collection_box(uuid,uuid,timestamptz,timestamptz,jsonb,uuid[],jsonb)'::regprocedure"))[0],{prosecdef:true,proconfig:['search_path=""']});
+  check((await query("select prosecdef from pg_proc where oid='public.create_collection_box(uuid,jsonb,uuid[],jsonb)'::regprocedure"))[0].prosecdef,false);
   console.log(`Box editing: ${checks} assertivas PostgreSQL/RLS passaram.`);
 } finally { await db.close(); }

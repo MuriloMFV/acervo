@@ -6,6 +6,7 @@ export type CollectionBoxRecord = CollectionBoxRow & {
 };
 export interface BoxFormValues {
   name: string; mediaFormat: MediaFormat; barcode: string; coverUrl: string;
+  backCoverUrl?: string | null;
   editionName: string; publisher: string; country: string; region: string; discCount: string;
   videoStandard?: VideoStandard | null;
   special: boolean; limited: boolean; condition: ItemCondition;

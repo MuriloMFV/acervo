@@ -8,9 +8,10 @@ import { ActionButton } from '../../src/components/ui/ActionButton';
 import { CountryDisplay } from '../../src/components/ui/CountryDisplay';
 import { VideoStandardDisplay } from '../../src/components/ui/VideoStandardDisplay';
 import { DistributorDisplay } from '../../src/components/ui/DistributorDisplay';
+import { EditionCoverFlip } from '../../src/components/collection/EditionCoverFlip';
 import { regionEncodingDraft } from '../../src/utils/videoStandard';
 import { useCollectionBox } from '../../src/hooks/useCollectionBoxes';
-import { boxCover, includedBoxMovies } from '../../src/services/boxes/mappers';
+import { boxBackCover, boxCover, includedBoxMovies } from '../../src/services/boxes/mappers';
 import { mediaFormatLabels } from '../../src/components/movie/MediaFormatBadge';
 import { conditionLabels, formatPurchaseDate, formatPurchasePrice } from '../../src/utils/collectionDetails';
 import type { MovieRow } from '../../src/services/supabase/types';
@@ -28,6 +29,7 @@ export default function BoxDetailsScreen() {
   const movies=useMemo(()=>box.data?includedBoxMovies(box.data):[],[box.data]);
   const back=()=>router.canGoBack()?router.back():router.replace('/');
   const cover=box.data?boxCover(box.data):null;
+  const backCover=box.data?boxBackCover(box.data):null;
   const set=box.data?.box_set;
   const regionEncoding=regionEncodingDraft(set?.region??'',set?.video_standard);
   const fields=box.data&&set?[
@@ -44,7 +46,7 @@ export default function BoxDetailsScreen() {
       data={movies} keyExtractor={movie=>movie.id} renderItem={({item})=><IncludedMovie movie={item} />}
       initialNumToRender={8} contentContainerStyle={styles.content}
       ListHeaderComponent={<View style={styles.content}>
-        <View style={styles.cover}>{cover?<Image accessibilityLabel={`Capa de ${set!.name}`} source={{uri:cover}} style={StyleSheet.absoluteFill} resizeMode="contain" />:<Film size={controls.iconSize} color={colors.textMuted} />}</View>
+        <EditionCoverFlip front={cover ? { uri: cover } : null} back={backCover ? { uri: backCover } : null} title={set!.name} style={styles.cover} resizeMode="contain" />
         <AppText variant="title">{set!.name}</AppText><View style={styles.header}><Badge label="BOX" tone="accent" /><AppText variant="caption" color="textSecondary">{movies.length} filmes</AppText></View>
         {box.data.is_favorite && <Badge label="Favorito" tone="accent" />}
         <ActionButton secondary label="Editar box" onPress={() => router.push({ pathname: '/boxes/edit', params: { id: box.data!.id } })} />

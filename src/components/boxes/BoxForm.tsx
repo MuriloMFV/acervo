@@ -96,12 +96,13 @@ export function BoxForm({ item, onSaved, onBack }: {
       </View>)}
       <ActionButton secondary label="Selecionar filmes" disabled={disabled} onPress={() => setPickerOpen(true)} />
       <AppText variant="heading">Capa do box</AppText>
-      <EditionCoverFields customCoverUrl={form.coverUrl.trim() || null} backCoverUrl={null} showBackCover={false} imageLabel="Capa do box"
+      <EditionCoverFields customCoverUrl={form.coverUrl.trim() || null} backCoverUrl={form.backCoverUrl ?? null} imageLabel="Capa do box"
         fallbackCoverUrl={selected[0]?.posterUrl ?? null} search={{ title: form.name, mediaFormat: form.mediaFormat, barcode: form.barcode,
           editionName: form.editionName, publisher: form.publisher, country: form.country, region: form.region }}
-        disabled={save.isPending} onBusyChange={setCoverBusy} onChange={({ customCoverUrl }) => {
-          if (customCoverUrl !== undefined) change({ coverUrl: customCoverUrl ?? '' });
-        }} />
+        disabled={save.isPending} onBusyChange={setCoverBusy} onChange={({ customCoverUrl, backCoverUrl }) => change({
+          ...(customCoverUrl === undefined ? {} : { coverUrl: customCoverUrl ?? '' }),
+          ...(backCoverUrl === undefined ? {} : { backCoverUrl }),
+        })} />
       <AppText variant="heading">Minha cópia</AppText>
       <CopyFields values={form} onChange={change} disabled={disabled} />
       {!!error && <AppText accessibilityRole="alert" color="danger">{error}</AppText>}

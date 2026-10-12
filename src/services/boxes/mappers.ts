@@ -18,9 +18,12 @@ export function parseBoxForm(form: BoxFormValues): { box: BoxSetInput; copy: Box
   if (!['SEALED','LIKE_NEW','VERY_GOOD','GOOD','FAIR'].includes(form.condition)) throw new Error('Condição inválida.');
   const cover = form.coverUrl.trim();
   if (cover && (cover.length > 2048 || !/^https?:\/\/[^\s]+$/i.test(cover))) throw new Error('Use uma URL http/https para a capa ou deixe em branco.');
+  const backCover = form.backCoverUrl?.trim() || null;
+  if (backCover && (backCover.length > 2048 || !/^https?:\/\/[^\s]+$/i.test(backCover))) throw new Error('Escolha uma imagem válida para a contracapa.');
   return {
     box: { name, media_format: form.mediaFormat, barcode: form.barcode.trim() ? validatedBarcode(form.barcode) : null,
       cover_url: cover || null, edition_name: text(form.editionName), publisher: text(form.publisher),
+      ...(form.backCoverUrl === undefined ? {} : { back_cover_url: backCover }),
       country: text(form.country), region: text(form.region), disc_count: parseDiscCount(form.discCount),
       ...(form.videoStandard === undefined ? {} : { video_standard: parseVideoStandard(form.videoStandard) }),
       is_special_edition: form.special, is_limited_edition: form.limited },
@@ -39,6 +42,9 @@ export function includedBoxMovies(box: CollectionBoxRecord) {
 }
 export function boxCover(box: CollectionBoxRecord): string | null {
   return box.box_set.cover_url?.trim() || includedBoxMovies(box)[0]?.poster_url || null;
+}
+export function boxBackCover(box: CollectionBoxRecord): string | null {
+  return box.box_set.back_cover_url?.trim() || null;
 }
 export function mapBoxCard(box: CollectionBoxRecord): CollectionPreviewItem {
   const cover = boxCover(box);
