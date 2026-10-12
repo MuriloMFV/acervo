@@ -1,6 +1,6 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import Film from 'lucide-react-native/icons/film';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View, type ImageLoadEvent } from 'react-native';
 import { colors, controls, radius, spacing } from '../../theme';
 import { movieLayout } from '../../theme/media';
 import type { CollectionPreviewItem } from '../../types/collectionPreview';
@@ -14,6 +14,29 @@ export interface MovieCardProps {
   onPress?: (id: string) => void;
 }
 
+function CoverArtwork({ item, width }: Pick<MovieCardProps, 'item' | 'width'>) {
+  const [aspectRatio, setAspectRatio] = useState<number>(movieLayout.posterAspectRatio);
+  // Keep the grid's existing space, but size the artwork and its logo together.
+  const frameHeight = width / movieLayout.posterAspectRatio;
+  const coverWidth = Math.min(width, frameHeight * aspectRatio);
+  const coverHeight = coverWidth / aspectRatio;
+  const onLoad = ({ nativeEvent: { source } }: ImageLoadEvent) => {
+    const ratio = source.width / source.height;
+    if (source.width > 0 && source.height > 0 && Number.isFinite(ratio)) setAspectRatio(ratio);
+  };
+
+  return <View style={styles.poster}>
+    <View style={[styles.artwork, { width: coverWidth, height: coverHeight }, !item.poster && styles.placeholder]}>
+      {item.poster
+        ? <Image source={item.poster} style={styles.image} resizeMode="contain" resizeMethod="resize" accessible={false} onLoad={onLoad} />
+        : <Film size={controls.iconSize} color={colors.textMuted} />}
+      <View style={styles.badge}>
+        {item.kind === 'box' ? <Badge label="BOX" tone="accent" /> : <MediaFormatBadge mediaFormat={item.mediaFormat} overlay />}
+      </View>
+    </View>
+  </View>;
+}
+
 export const MovieCard = memo(function MovieCard({ item, width, onPress }: MovieCardProps) {
   return (
     <Pressable
@@ -24,18 +47,7 @@ export const MovieCard = memo(function MovieCard({ item, width, onPress }: Movie
       accessibilityLabel={[item.title, item.year, mediaFormatLabels[item.mediaFormat], item.kind === 'box' ? `Box, ${item.movieCount} filmes` : null].filter(value => value != null).join(', ')}
       style={({ pressed }) => [{ width }, pressed && { opacity: controls.pressedOpacity }]}
     >
-      <View style={styles.poster}>
-        {item.poster ? (
-          <Image source={item.poster} style={styles.image} resizeMode="cover" resizeMethod="resize" accessible={false} />
-        ) : (
-          <View style={styles.placeholder}>
-            <Film size={controls.iconSize} color={colors.textMuted} />
-          </View>
-        )}
-        <View style={styles.badge}>
-          {item.kind === 'box' ? <Badge label="BOX" tone="accent" /> : <MediaFormatBadge mediaFormat={item.mediaFormat} />}
-        </View>
-      </View>
+      <CoverArtwork key={JSON.stringify(item.poster)} item={item} width={width} />
       <View style={styles.metadata}>
         <AppText
           variant="movieTitle"
@@ -52,9 +64,10 @@ export const MovieCard = memo(function MovieCard({ item, width, onPress }: Movie
 });
 
 const styles = StyleSheet.create({
-  poster: { width: '100%', aspectRatio: movieLayout.posterAspectRatio, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.surface },
+  poster: { width: '100%', aspectRatio: movieLayout.posterAspectRatio, alignItems: 'center', justifyContent: 'center' },
+  artwork: { borderRadius: radius.md, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   image: { width: '100%', height: '100%' },
-  placeholder: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  placeholder: { backgroundColor: colors.surface },
   badge: { position: 'absolute', top: spacing.xs, right: spacing.xs, maxWidth: '100%' },
   metadata: { paddingTop: spacing.xs, paddingHorizontal: spacing.xs },
   title: { textAlign: 'center' },
