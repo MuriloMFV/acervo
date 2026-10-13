@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import ArrowLeft from 'lucide-react-native/icons/arrow-left';
 import { AppText, IconButton, Screen } from '../../src/components/ui';
 import { ActionButton } from '../../src/components/ui/ActionButton';
@@ -24,11 +24,13 @@ export default function BarcodeConfirmationScreen() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   return <Screen>
-    <View style={styles.header}><IconButton accessibilityLabel="Voltar" disabled={saving} onPress={() => router.canGoBack() ? router.back() : router.replace('/add/barcode')}><ArrowLeft size={controls.iconSize} color={colors.textSecondary} /></IconButton><AppText variant="heading">Confirmar edição</AppText></View>
-    <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
+    <View style={styles.header}><IconButton accessibilityLabel="Voltar" disabled={saving} onPress={() => router.canGoBack() ? router.back() : router.replace('/add/barcode')}><ArrowLeft size={controls.iconSize} color={colors.textSecondary} /></IconButton><AppText variant="heading" style={styles.flex}>Confirmar edição</AppText></View>
+    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <ScrollView keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" contentContainerStyle={styles.content}>
       {!isValidBarcode(code) || (!known && !validId) ? <AppText color="textMuted">Código ou filme inválido</AppText> : !lookup.isError && (lookup.isPending || (!known && movie.isPending)) ? <ActivityIndicator accessibilityLabel="Carregando edição" color={colors.accent} /> : null}
       {known ? <BarcodeConfirmation key={known.id} barcode={code} knownEdition={known} onBusyChange={setSaving} /> : movie.isError ? <><AppText color="textMuted">Não foi possível carregar o filme</AppText><ActionButton label="Tentar novamente" onPress={() => { void movie.refetch(); }} /></> : movie.data && isValidBarcode(code) && !lookup.isPending ? <BarcodeConfirmation key={`${code}:${id}`} barcode={code} movie={movie.data} candidate={lookup.data?.source === 'UPCITEMDB' ? lookup.data.candidate : null} webCandidate={webCandidate} onBusyChange={setSaving} /> : null}
     </ScrollView>
+    </KeyboardAvoidingView>
   </Screen>;
 }
-const styles = StyleSheet.create({ header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md }, content: { gap: spacing.md, paddingBottom: spacing.xl } });
+const styles = StyleSheet.create({ flex: { flex: 1 }, header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md }, content: { gap: spacing.md, paddingBottom: spacing.xl } });

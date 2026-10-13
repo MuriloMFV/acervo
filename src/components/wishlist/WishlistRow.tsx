@@ -1,4 +1,4 @@
-import {memo} from 'react';
+import {memo,useState} from 'react';
 import {Image,Pressable,StyleSheet,View} from 'react-native';
 import Film from 'lucide-react-native/icons/film';
 import ChevronRight from 'lucide-react-native/icons/chevron-right';
@@ -8,8 +8,9 @@ import type {WishlistItemRow} from '../../services/supabase/types';
 import {formatPurchasePrice} from '../../utils/collectionDetails';
 import {colors,controls,radius,spacing} from '../../theme';
 export const WishlistRow=memo(function WishlistRow({item,onPress}:{item:WishlistItemRow;onPress:(id:string)=>void}) {
+  const [failedPoster,setFailedPoster]=useState<string|null>(null);
   return <Pressable accessibilityRole="button" accessibilityLabel={[item.title,desiredFormatLabels[item.desired_format],`Prioridade ${priorityLabels[item.priority]}`,statusLabels[item.status]].join(', ')} onPress={()=>onPress(item.id)} style={({pressed})=>[styles.row,pressed&&styles.pressed]}>
-    <View style={styles.poster}>{item.poster_url?<Image accessible={false} source={{uri:item.poster_url}} style={StyleSheet.absoluteFill} resizeMode="contain" />:<Film size={controls.iconSize} color={colors.textMuted} />}</View>
+    <View style={styles.poster}>{item.poster_url&&failedPoster!==item.poster_url?<Image accessible={false} source={{uri:item.poster_url}} style={StyleSheet.absoluteFill} resizeMode="contain" resizeMethod="resize" onError={()=>setFailedPoster(item.poster_url)} />:<Film size={controls.iconSize} color={colors.textMuted} />}</View>
     <View style={styles.metadata}>
       <AppText variant="searchResultTitle" numberOfLines={2}>{item.title}</AppText>
       <AppText variant="caption" color="textSecondary">{desiredFormatLabels[item.desired_format]}</AppText>

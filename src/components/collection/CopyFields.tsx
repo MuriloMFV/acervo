@@ -6,8 +6,10 @@ import { ConditionSelector } from './ConditionSelector';
 import type { CopyFormValues } from '../../services/collection/types';
 import { colors, spacing } from '../../theme';
 
+export type CopyFieldValues = Omit<CopyFormValues, 'condition'> & { condition: CopyFormValues['condition'] | null };
+
 export function CopyFields({ values, onChange, disabled = false }: {
-  values: CopyFormValues; onChange: (changes: Partial<CopyFormValues>) => void; disabled?: boolean;
+  values: CopyFieldValues; onChange: (changes: Partial<CopyFormValues>) => void; disabled?: boolean;
 }) {
   const field = (key: 'price' | 'date' | 'place' | 'notes') => (text: string) => onChange({ [key]: text });
   return <View style={styles.fields}>

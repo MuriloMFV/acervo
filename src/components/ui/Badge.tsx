@@ -16,7 +16,7 @@ export function Badge({ label, icon, hideLabel = false, tone = 'neutral', style,
   return (
     <View accessible={hideLabel || undefined} accessibilityLabel={hideLabel ? label : undefined} {...props} style={[styles.badge, highlighted && styles.accent, style]}>
       {icon}
-      {!hideLabel && <AppText variant="caption" color={highlighted ? 'accent' : 'textSecondary'} style={textStyle}>
+      {!hideLabel && <AppText variant="caption" color={highlighted ? 'accent' : 'textSecondary'} style={[styles.label, textStyle]}>
         {label}
       </AppText>}
     </View>
@@ -25,6 +25,7 @@ export function Badge({ label, icon, hideLabel = false, tone = 'neutral', style,
 
 const styles = StyleSheet.create({
   badge: {
+    maxWidth: '100%',
     alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
@@ -34,5 +35,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     backgroundColor: colors.surfaceActive,
   },
+  label: { flexShrink: 1 },
   accent: { backgroundColor: colors.accentSurface },
 });

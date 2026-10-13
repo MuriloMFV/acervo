@@ -84,7 +84,7 @@ export function RegionSelector({ value, videoStandard, mediaFormat, onChange, di
 }
 const styles = StyleSheet.create({
   flex: { flex: 1 }, field: { gap: spacing.sm }, name: { flex: 1 },
-  input: { flexDirection: 'row', alignItems: 'center', minHeight: controls.minTouchSize, gap: spacing.sm, padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.surfaceElevated },
+  input: { flexDirection: 'row', alignItems: 'center', minHeight: controls.fieldMinHeight, gap: spacing.sm, padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.surfaceElevated },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.sm },
   summary: { paddingBottom: spacing.md }, list: { gap: spacing.sm, paddingBottom: spacing.lg },
   footer: { gap: spacing.sm, paddingVertical: spacing.sm },

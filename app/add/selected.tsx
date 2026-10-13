@@ -60,7 +60,7 @@ export default function SelectedMovieScreen() {
         <IconButton accessibilityLabel="Voltar à busca" onPress={goBack} disabled={disabled}><ArrowLeft size={controls.iconSize} color={colors.textSecondary} /></IconButton>
       </View>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           {validId && movie.isPending && <ActivityIndicator accessibilityLabel="Carregando filme" color={colors.accent} />}
           {validId && movie.isError && <>
             <AppText accessibilityRole="alert" color="textMuted">Não foi possível carregar agora</AppText>
@@ -90,7 +90,7 @@ export default function SelectedMovieScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  header: { paddingVertical: spacing.md, alignItems: 'flex-start' },
-  content: { flexGrow: 1, gap: spacing.md, paddingVertical: spacing.lg },
+  header: { paddingVertical: spacing.sm, alignItems: 'flex-start' },
+  content: { flexGrow: 1, gap: spacing.md, paddingTop: spacing.sm, paddingBottom: spacing.xl },
   formats: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
 });

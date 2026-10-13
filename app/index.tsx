@@ -97,7 +97,6 @@ const styles = StyleSheet.create({
   gridContent: { paddingHorizontal: spacing.sm },
   header: { gap: spacing.sm, paddingTop: spacing.sm, paddingBottom: spacing.sm },
   gridHeader: { paddingHorizontal: spacing.page - spacing.sm, paddingBottom: spacing.md },
-  empty: { textAlign: 'center', paddingVertical: spacing.xl },
   footer: { alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.lg },
   handle: { width: spacing.xl, height: spacing.xs, borderRadius: radius.full, backgroundColor: colors.surfaceActive },
 });

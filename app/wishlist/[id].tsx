@@ -55,8 +55,8 @@ export default function WishlistDetailsScreen() {
     setError('');setChanged(false);
   };
   const data=item.data;
-  return <Screen><View style={styles.header}><IconButton accessibilityLabel="Voltar à lista de desejos" onPress={back} disabled={busy}><ArrowLeft size={controls.iconSize} color={colors.textSecondary} /></IconButton><AppText variant="heading">{original?'Editar desejo':'Meu desejo'}</AppText></View>
-    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS==='ios'?'padding':'height'}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
+  return <Screen><View style={styles.header}><IconButton accessibilityLabel="Voltar à lista de desejos" onPress={back} disabled={busy}><ArrowLeft size={controls.iconSize} color={colors.textSecondary} /></IconButton><AppText variant="heading" style={styles.flex}>{original?'Editar desejo':'Meu desejo'}</AppText></View>
+    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS==='ios'?'padding':'height'}><ScrollView keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" contentContainerStyle={styles.content}>
       {!!itemId&&item.isPending&&<ActivityIndicator accessibilityLabel="Carregando desejo" color={colors.accent} />}
       {item.isError&&<><AppText color="textMuted">Não foi possível carregar o desejo</AppText><ActionButton secondary label="Tentar novamente" onPress={()=>{void item.refetch();}} /></>}
       {!item.isPending&&!item.isError&&!data&&<AppText color="textMuted">Item não encontrado</AppText>}

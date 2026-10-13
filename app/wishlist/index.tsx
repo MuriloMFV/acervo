@@ -1,6 +1,6 @@
 import {useCallback,useMemo,useState} from 'react';
 import {useRouter} from 'expo-router';
-import {ActivityIndicator,FlatList,Keyboard,KeyboardAvoidingView,Modal,Platform,StyleSheet,View,type ListRenderItem} from 'react-native';
+import {ActivityIndicator,FlatList,Keyboard,KeyboardAvoidingView,Modal,Platform,ScrollView,StyleSheet,View,type ListRenderItem} from 'react-native';
 import ArrowLeft from 'lucide-react-native/icons/arrow-left';
 import Plus from 'lucide-react-native/icons/plus';
 import {AppText,IconButton,Screen} from '../../src/components/ui';
@@ -40,8 +40,8 @@ export default function WishlistScreen() {
     />
     </KeyboardAvoidingView>
     <Modal visible={sortOpen} transparent animationType="fade" onRequestClose={()=>setSortOpen(false)}>
-      <View style={styles.modal}><View accessibilityViewIsModal style={styles.menu}><AppText variant="heading">Ordenar por</AppText>{(Object.keys(wishlistSortLabels) as WishlistSort[]).map(value=><ActionButton key={value} secondary={sort!==value} label={wishlistSortLabels[value]} onPress={()=>{setSort(value);setSortOpen(false);}} />)}<ActionButton secondary label="Cancelar" onPress={()=>setSortOpen(false)} /></View></View>
+      <Screen style={styles.modal}><View accessibilityViewIsModal style={styles.menu}><ScrollView contentContainerStyle={styles.menuContent}><AppText variant="heading">Ordenar por</AppText>{(Object.keys(wishlistSortLabels) as WishlistSort[]).map(value=><ActionButton key={value} secondary={sort!==value} label={wishlistSortLabels[value]} onPress={()=>{setSort(value);setSortOpen(false);}} />)}<ActionButton secondary label="Cancelar" onPress={()=>setSortOpen(false)} /></ScrollView></View></Screen>
     </Modal>
   </Screen>;
 }
-const styles=StyleSheet.create({flex:{flex:1},header:{flexDirection:'row',alignItems:'center',gap:spacing.sm,paddingVertical:spacing.sm},list:{paddingBottom:spacing.xl},controls:{gap:spacing.md,paddingBottom:spacing.sm},buttons:{flexDirection:'row',flexWrap:'wrap',gap:spacing.sm},empty:{textAlign:'center',paddingVertical:spacing.xl},modal:{flex:1,justifyContent:'center',padding:spacing.page,backgroundColor:colors.background+'EE'},menu:{padding:spacing.md,borderRadius:radius.lg,backgroundColor:colors.surface,gap:spacing.sm}});
+const styles=StyleSheet.create({flex:{flex:1},header:{flexDirection:'row',alignItems:'center',gap:spacing.sm,paddingVertical:spacing.sm},list:{paddingBottom:spacing.xl},controls:{gap:spacing.md,paddingBottom:spacing.sm},buttons:{flexDirection:'row',flexWrap:'wrap',gap:spacing.sm},empty:{textAlign:'center',paddingVertical:spacing.xl},modal:{flex:1,justifyContent:'center',backgroundColor:colors.background+'EE'},menu:{maxHeight:'80%',borderRadius:radius.lg,backgroundColor:colors.surface,overflow:'hidden'},menuContent:{padding:spacing.md,gap:spacing.sm}});

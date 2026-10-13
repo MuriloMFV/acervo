@@ -14,7 +14,7 @@ export default function WishlistSearchScreen() {
   const choose=useCallback((id:string)=>{Keyboard.dismiss();router.navigate({pathname:'/wishlist/add',params:{id}});},[router]);
   const render=useCallback<ListRenderItem<MovieSearchCandidate>>(({item})=><MovieSearchResult movie={item} onPress={choose} />,[choose]);
   const back=()=>router.canGoBack()?router.back():router.replace('/wishlist');
-  return <Screen><View style={styles.header}><IconButton accessibilityLabel="Voltar" onPress={back}><ArrowLeft size={controls.iconSize} color={colors.textSecondary} /></IconButton><AppText variant="heading">Buscar filme</AppText></View>
+  return <Screen><View style={styles.header}><IconButton accessibilityLabel="Voltar" onPress={back}><ArrowLeft size={controls.iconSize} color={colors.textSecondary} /></IconButton><AppText variant="heading" style={styles.content}>Buscar filme</AppText></View>
     <KeyboardAvoidingView style={styles.content} behavior={Platform.OS==='ios'?'padding':'height'}>
     <MovieSearchField value={search} onChangeText={setSearch} />
     <FlatList data={results} keyExtractor={movie=>movie.id} renderItem={render} initialNumToRender={8} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" contentContainerStyle={styles.results}

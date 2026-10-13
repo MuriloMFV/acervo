@@ -29,7 +29,7 @@ export function Chip({
       ]}
     >
       {icon}
-      {!hideLabel && <AppText variant="label" color={selected ? 'onPrimary' : 'text'}>
+      {!hideLabel && <AppText variant="label" color={selected ? 'onPrimary' : 'text'} style={styles.label}>
         {label}
       </AppText>}
     </Pressable>
@@ -38,6 +38,7 @@ export function Chip({
 
 const styles = StyleSheet.create({
   chip: {
+    maxWidth: '100%',
     minWidth: controls.minTouchSize,
     minHeight: controls.minTouchSize,
     alignSelf: 'flex-start',
@@ -50,6 +51,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.full,
     backgroundColor: colors.surfaceActive,
   },
+  label: { flexShrink: 1, textAlign: 'center' },
   selected: { backgroundColor: colors.primary },
   pressed: { opacity: controls.pressedOpacity },
   disabled: { opacity: controls.disabledOpacity },

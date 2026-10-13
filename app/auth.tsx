@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import appConfig from '../app.json';
 import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View, useWindowDimensions, type TextInputProps } from 'react-native';
 import Mail from 'lucide-react-native/icons/mail';
 import LockKeyhole from 'lucide-react-native/icons/lock-keyhole';
@@ -92,7 +93,7 @@ export default function AuthScreen() {
           </View>
         </View> : <AppText variant="title">Acervo</AppText>}
         {isLogin ? <View style={styles.loginForm}>{form}</View> : form}
-        {isLogin && <AppText variant="caption" color="textMuted" style={styles.version}>versão 1.0.1 (beta)</AppText>}
+        {isLogin && <AppText variant="caption" color="textMuted" style={styles.version}>versão {appConfig.expo.version} (beta)</AppText>}
       </ScrollView>
     </KeyboardAvoidingView>
   </Screen>;

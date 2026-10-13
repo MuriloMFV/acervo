@@ -46,8 +46,8 @@ export default function AddWishlistScreen() {
     finally{lock.current=false;setBusy(false);}
   };
   const back=()=>router.canGoBack()?router.back():router.replace('/wishlist/search');
-  return <Screen><View style={styles.header}><IconButton accessibilityLabel="Voltar" onPress={back} disabled={busy}><ArrowLeft size={controls.iconSize} color={colors.textSecondary} /></IconButton><AppText variant="heading">Adicionar desejo</AppText></View>
-    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS==='ios'?'padding':'height'}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
+  return <Screen><View style={styles.header}><IconButton accessibilityLabel="Voltar" onPress={back} disabled={busy}><ArrowLeft size={controls.iconSize} color={colors.textSecondary} /></IconButton><AppText variant="heading" style={styles.flex}>Adicionar desejo</AppText></View>
+    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS==='ios'?'padding':'height'}><ScrollView keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" contentContainerStyle={styles.content}>
       {valid&&movie.isPending&&<ActivityIndicator accessibilityLabel="Carregando filme" color={colors.accent} />}
       {valid&&movie.isError&&<><AppText color="textMuted">Não foi possível carregar o filme</AppText><ActionButton secondary label="Tentar novamente" onPress={()=>{void movie.refetch();}} /></>}
       {!valid&&<AppText color="textMuted">Filme não encontrado</AppText>}

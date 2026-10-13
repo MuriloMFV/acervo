@@ -51,7 +51,7 @@ function CopyForm({ item, onBack }: { item: CollectionRecord; onBack: () => void
     try { save.mutate(parseCopyForm({ ...values, usePhotoAsCover: hasPhoto && !!values.usePhotoAsCover })); } catch (cause) { setError(cause instanceof Error ? cause.message : 'Confira os dados'); }
   };
   return <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-    <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
+    <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
       <AppText variant="heading">Editar minha cópia</AppText>
       <AppText color="textMuted">{item.edition.movie.title}</AppText>
       <CopyFields values={values} onChange={changes => setValues(previous => ({ ...previous, ...changes }))} disabled={save.isPending} />

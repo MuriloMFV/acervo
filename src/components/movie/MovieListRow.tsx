@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 import Film from 'lucide-react-native/icons/film';
 import ChevronRight from 'lucide-react-native/icons/chevron-right';
@@ -12,6 +12,8 @@ export const MovieListRow = memo(function MovieListRow({ item, onPress }: {
   item: CollectionPreviewItem;
   onPress?: (id: string) => void;
 }) {
+  const posterKey = JSON.stringify(item.poster);
+  const [failedPoster, setFailedPoster] = useState<string | null>(null);
   return <Pressable
     accessible
     accessibilityRole={onPress ? 'button' : undefined}
@@ -21,8 +23,8 @@ export const MovieListRow = memo(function MovieListRow({ item, onPress }: {
     style={({ pressed }) => [styles.row, pressed && styles.pressed]}
   >
     <View style={styles.poster}>
-      {item.poster
-        ? <Image source={item.poster} resizeMode="contain" resizeMethod="resize" style={styles.image} accessible={false} />
+      {item.poster && failedPoster !== posterKey
+        ? <Image source={item.poster} resizeMode="contain" resizeMethod="resize" style={styles.image} accessible={false} onError={() => setFailedPoster(posterKey)} />
         : <Film size={controls.iconSize} color={colors.textMuted} />}
     </View>
     <View style={styles.metadata}>

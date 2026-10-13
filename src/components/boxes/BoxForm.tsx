@@ -74,9 +74,9 @@ export function BoxForm({ item, onSaved, onBack }: {
   };
 
   return <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-    <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
+    <ScrollView keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" contentContainerStyle={styles.content}>
       <View style={styles.header}><IconButton accessibilityLabel="Voltar" disabled={disabled} onPress={onBack}><ArrowLeft size={controls.iconSize} color={colors.textSecondary} /></IconButton>
-        <AppText variant="heading">{original ? 'Editar box' : 'Adicionar box'}</AppText></View>
+        <AppText variant="heading" style={styles.flex}>{original ? 'Editar box' : 'Adicionar box'}</AppText></View>
       <FormField label="Nome do box" value={form.name} maxLength={200} editable={!disabled} onChangeText={name => change({ name })} />
       <AppText variant="label">Formato</AppText>
       <View style={styles.wrap}>{(Object.keys(mediaFormatLabels) as MediaFormat[]).map(format => <Chip key={format}

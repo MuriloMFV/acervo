@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSession } from '../src/contexts/SessionContext';
@@ -51,7 +51,7 @@ export default function AccountScreen() {
       if (currentUserId.current === userId) setNameMessage(cause instanceof Error ? cause.message : 'Não foi possível salvar o nome.');
     } finally { nameLock.current = false; setSaving(false); }
   };
-  return <Screen><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
+  return <Screen><KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}><ScrollView keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" contentContainerStyle={styles.content}>
     <AppText variant="heading">Conta</AppText>
     <AppText>{session?.user.email}</AppText>
     <FormField label="Nome" value={name} maxLength={80} autoComplete="name" editable={!busy && !saving && !!profile.data} onChangeText={value => { setName(value); setDirty(true); setNameMessage(''); }} />
@@ -61,6 +61,6 @@ export default function AccountScreen() {
     {error && <AppText color="textMuted">Não foi possível sair agora</AppText>}
     <ActionButton label="Sair" busy={busy} disabled={saving} onPress={() => void exit()} />
     <ActionButton label="Voltar" secondary disabled={busy || saving} onPress={() => router.canGoBack() ? router.back() : router.replace('/')} />
-  </ScrollView></Screen>;
+  </ScrollView></KeyboardAvoidingView></Screen>;
 }
-const styles = StyleSheet.create({ content: { paddingVertical: spacing.xl, gap: spacing.lg } });
+const styles = StyleSheet.create({ flex: { flex: 1 }, content: { paddingVertical: spacing.md, paddingBottom: spacing.xl, gap: spacing.md } });

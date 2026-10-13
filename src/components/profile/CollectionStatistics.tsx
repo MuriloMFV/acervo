@@ -34,6 +34,6 @@ const styles = StyleSheet.create({
   section: { gap: spacing.md }, heading: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm }, title: { flex: 1, gap: spacing.sm },
   card: { padding: spacing.md, borderRadius: radius.lg, backgroundColor: colors.surface, gap: spacing.sm },
   total: { flexDirection: 'row', alignItems: 'center', gap: spacing.md }, numberRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.sm },
-  formats: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }, format: { flexGrow: 1, flexBasis: '21%', paddingHorizontal: spacing.sm, alignItems: 'center' },
+  formats: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }, format: { flexGrow: 1, flexBasis: '21%', minWidth: controls.minTouchSize + spacing.lg, paddingHorizontal: spacing.sm, alignItems: 'center' },
   frequencies: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }, frequent: { flexGrow: 1, flexBasis: '46%' }, wide: { flexBasis: '100%' },
 });

@@ -15,6 +15,7 @@ export interface MovieCardProps {
 
 function CoverArtwork({ item, width }: Pick<MovieCardProps, 'item' | 'width'>) {
   const [aspectRatio, setAspectRatio] = useState<number>(movieLayout.posterAspectRatio);
+  const [failed, setFailed] = useState(false);
   // Keep the grid's existing space while preserving the artwork's proportions.
   const frameHeight = width / movieLayout.posterAspectRatio;
   const coverWidth = Math.min(width, frameHeight * aspectRatio);
@@ -25,9 +26,9 @@ function CoverArtwork({ item, width }: Pick<MovieCardProps, 'item' | 'width'>) {
   };
 
   return <View style={styles.poster}>
-    <View style={[styles.artwork, { width: coverWidth, height: coverHeight }, !item.poster && styles.placeholder]}>
-      {item.poster
-        ? <Image source={item.poster} style={styles.image} resizeMode="contain" resizeMethod="resize" accessible={false} onLoad={onLoad} />
+    <View style={[styles.artwork, { width: coverWidth, height: coverHeight }, (!item.poster || failed) && styles.placeholder]}>
+      {item.poster && !failed
+        ? <Image source={item.poster} style={styles.image} resizeMode="contain" resizeMethod="resize" accessible={false} onLoad={onLoad} onError={() => setFailed(true)} />
         : <Film size={controls.iconSize} color={colors.textMuted} />}
     </View>
   </View>;

@@ -46,7 +46,7 @@ export function DistributorSelector({ value, onChange, disabled = false }: {
             <ActionButton label="Usar esta distribuidora" disabled={disabled || !customName.trim()} onPress={() => choose(customName.trim())} />
           </ScrollView> : <>
             <View style={styles.search}><FormField label="Buscar distribuidora" value={search} onChangeText={setSearch} autoCorrect={false} autoCapitalize="none" placeholder="Nome da distribuidora" /></View>
-            <FlatList data={choices} keyExtractor={distributor => distributor.id} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.list}
+            <FlatList data={choices} keyExtractor={distributor => distributor.id} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" contentContainerStyle={styles.list}
               ListHeaderComponent={<Pressable accessibilityRole="button" accessibilityState={{ selected: !value.trim(), disabled }} disabled={disabled} onPress={() => choose('')} style={({ pressed }) => [styles.option, pressed && styles.pressed]}><AppText color="textMuted" style={styles.name}>Não informado</AppText>{!value.trim() && <Check accessible={false} size={controls.iconSize} color={colors.accent} />}</Pressable>}
               ListEmptyComponent={<AppText color="textMuted" style={styles.empty}>Nenhuma distribuidora encontrada.</AppText>}
               renderItem={({ item }) => <Pressable accessibilityRole="button" accessibilityLabel={item.name} accessibilityState={{ selected: selected?.id === item.id, disabled }} disabled={disabled} onPress={() => choose(item.name)} style={({ pressed }) => [styles.option, selected?.id === item.id && styles.selected, pressed && styles.pressed]}>
@@ -62,7 +62,7 @@ export function DistributorSelector({ value, onChange, disabled = false }: {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 }, field: { gap: spacing.sm }, name: { flex: 1 },
-  input: { flexDirection: 'row', alignItems: 'center', minHeight: controls.minTouchSize, gap: spacing.sm, padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.surfaceElevated },
+  input: { flexDirection: 'row', alignItems: 'center', minHeight: controls.fieldMinHeight, gap: spacing.sm, padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.surfaceElevated },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.sm },
   search: { paddingBottom: spacing.sm }, list: { gap: spacing.xs, paddingBottom: spacing.md },
   option: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: controls.minTouchSize, padding: spacing.sm, borderRadius: radius.md },

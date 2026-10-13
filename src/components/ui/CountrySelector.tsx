@@ -33,7 +33,7 @@ export function CountrySelector({ value, onChange, disabled = false }: {
         <View style={styles.header}><AppText variant="heading" style={styles.name}>País</AppText><IconButton accessibilityLabel="Fechar seleção de país" onPress={close}><X size={controls.iconSize} color={colors.text} /></IconButton></View>
         <View style={styles.search}><FormField label="Buscar país" value={search} onChangeText={setSearch} autoCorrect={false} autoCapitalize="none" placeholder="Nome ou sigla" /><ActionButton secondary label="Não informado" disabled={disabled} onPress={() => choose('')} /></View>
         {!!value && !selected && <AppText variant="caption" color="textMuted" style={styles.legacy}>Atual: {value}</AppText>}
-        <FlatList data={choices} keyExtractor={country => country.code} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.list} ListEmptyComponent={<AppText color="textMuted">Nenhum país encontrado.</AppText>} renderItem={({ item }) => <Pressable accessibilityRole="button" accessibilityLabel={item.name} accessibilityState={{ selected: selected?.code === item.code, disabled }} disabled={disabled} onPress={() => choose(item.name)} style={({ pressed }) => [styles.option, selected?.code === item.code && styles.selected, pressed && styles.pressed]}>
+        <FlatList data={choices} keyExtractor={country => country.code} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" contentContainerStyle={styles.list} ListEmptyComponent={<AppText color="textMuted">Nenhum país encontrado.</AppText>} renderItem={({ item }) => <Pressable accessibilityRole="button" accessibilityLabel={item.name} accessibilityState={{ selected: selected?.code === item.code, disabled }} disabled={disabled} onPress={() => choose(item.name)} style={({ pressed }) => [styles.option, selected?.code === item.code && styles.selected, pressed && styles.pressed]}>
           <Text accessible={false} style={styles.flag}>{countryFlag(item.code)}</Text><AppText style={styles.name}>{item.name}</AppText>{selected?.code === item.code && <Check accessible={false} size={controls.iconSize} color={colors.accent} />}
         </Pressable>} />
         </KeyboardAvoidingView>
@@ -43,7 +43,7 @@ export function CountrySelector({ value, onChange, disabled = false }: {
 }
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  field: { gap: spacing.sm }, input: { flexDirection: 'row', alignItems: 'center', minHeight: controls.minTouchSize, gap: spacing.sm, padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.surfaceElevated },
+  field: { gap: spacing.sm }, input: { flexDirection: 'row', alignItems: 'center', minHeight: controls.fieldMinHeight, gap: spacing.sm, padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.surfaceElevated },
   flag: { fontSize: 24 }, name: { flex: 1 }, header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.sm },
   search: { gap: spacing.sm, paddingBottom: spacing.md }, list: { gap: spacing.xs, paddingBottom: spacing.lg },
   option: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: controls.minTouchSize, padding: spacing.md, borderRadius: radius.md },

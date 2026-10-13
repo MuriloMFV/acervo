@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
 import { AppText, Screen } from '../../src/components/ui';
 import { ActionButton } from '../../src/components/ui/ActionButton';
 import { useCollectionItem } from '../../src/hooks/useCollection';
@@ -50,7 +50,7 @@ function EditionForm({ item, onBack }: { item: CollectionRecord; onBack: () => v
     try { save.mutate(parseEditionForm(values)); } catch (cause) { setError(cause instanceof Error ? cause.message : 'Confira os dados.'); }
   };
   return <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-    <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
+    <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
       <AppText variant="heading">Editar edição</AppText>
       <AppText color="textMuted">{edition.movie.title}</AppText>
       <EditionCoverFields customCoverUrl={values.customCoverUrl} backCoverUrl={values.backCoverUrl} fallbackCoverUrl={edition.product_image_url ?? edition.movie.poster_url} search={{ title: edition.movie.title, mediaFormat: edition.media_format, barcode: values.barcode || undefined, editionName: values.editionName, publisher: values.publisher, country: values.country, region: values.region }} onChange={changes => setValues(previous => ({ ...previous, ...changes }))} onBusyChange={setCoverBusy} disabled={save.isPending} />

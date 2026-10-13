@@ -2,7 +2,7 @@ import { Image, StyleSheet, Text, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 import { palLogo } from '../../assets/icons/code icons/native';
 import type { VideoStandard } from '../../types/videoStandard';
-import { colors, radius } from '../../theme';
+import { colors, radius, typography } from '../../theme';
 
 const raster = {
   NTSC: require('../../assets/icons/code icons/NTSC-Region.png'),
@@ -22,5 +22,5 @@ export function VideoStandardIcon({ value, width = 72, height = 40 }: { value: V
 }
 const styles = StyleSheet.create({
   logo: { flexShrink: 0, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderRadius: radius.sm, backgroundColor: '#000' },
-  variant: { flexDirection: 'row', gap: 2 }, suffix: { color: colors.text, fontWeight: '700' },
+  variant: { flexDirection: 'row', gap: 2 }, suffix: { ...typography.label, color: colors.text },
 });
