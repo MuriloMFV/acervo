@@ -18,6 +18,7 @@ import type { CollectionShortcut } from '../src/types/collectionFilters';
 import { colors, spacing } from '../src/theme';
 import { useSession } from '../src/contexts/SessionContext';
 import { exportCollectionPdf } from '../src/services/export';
+import { exportDiagnostic, exportErrorMessage } from '../src/services/export/errors';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -33,7 +34,10 @@ export default function ProfileScreen() {
     exportLock.current = true;
     setExporting(true);
     try { await exportCollectionPdf(session.user.id); }
-    catch { Alert.alert('Exportar Acervo', 'Não foi possível gerar ou compartilhar o PDF. Tente novamente.'); }
+    catch (cause) {
+      if (__DEV__) console.warn('[Acervo PDF] Exportação falhou', exportDiagnostic(cause));
+      Alert.alert('Exportar Acervo', exportErrorMessage(cause));
+    }
     finally { exportLock.current = false; setExporting(false); }
   };
   const { applyShortcut } = useCollectionFilters();

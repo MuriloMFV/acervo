@@ -11,6 +11,8 @@ import { photoCoverRequests, withPhotoCover } from '../photos/covers';
 import { fontAssets, fontFamilies } from '../../theme/fonts';
 import { buildCollectionDocument, exportItems } from './document';
 import { saveCollectionPdf } from './pdf';
+import { exportImageBase64, optionalExportAssets } from './assets';
+import { CollectionExportError, exportDiagnostic, exportStep } from './errors';
 
 async function localAsset(module: number): Promise<string> {
   const asset = await Asset.fromModule(module).downloadAsync();
@@ -24,10 +26,9 @@ async function thumbnail(uri: string, logo = false): Promise<string> {
     else context.resize({ width: 120 });
     const image = await context.renderAsync();
     try {
-      const saved = await image.saveAsync({ format: logo ? SaveFormat.PNG : SaveFormat.JPEG, compress: 0.75 });
-      const file = new File(saved.uri);
-      try { return `data:image/${logo ? 'png' : 'jpeg'};base64,${await file.base64()}`; }
-      finally { if (file.exists) file.delete(); }
+      return await exportImageBase64(logo ? 'image/png' : 'image/jpeg',
+        options => image.saveAsync({ ...options, format: logo ? SaveFormat.PNG : SaveFormat.JPEG }),
+        uri => { const file = new File(uri); if (file.exists) file.delete(); });
     } finally { image.release(); }
   } finally { context.release(); }
 }
@@ -59,21 +60,27 @@ async function coverImage(url: string, folder: Directory, index: number): Promis
 }
 
 export async function exportCollectionPdf(expectedUserId: string): Promise<void> {
-  if (!await Sharing.isAvailableAsync()) throw new Error('Compartilhamento indisponível.');
-  if (await authenticatedUserId() !== expectedUserId) throw new Error('Sessão alterada.');
-  const [records, boxes] = await Promise.all([listCollectionItems(), listCollectionBoxes()]);
-  if (await authenticatedUserId() !== expectedUserId || records.some(item => item.user_id !== expectedUserId) || boxes.some(item => item.user_id !== expectedUserId)) throw new Error('Sessão alterada.');
+  if (!await exportStep('availability', Sharing.isAvailableAsync)) throw new CollectionExportError('availability');
+  const checkSession = () => exportStep('session', async () => {
+    if (await authenticatedUserId() !== expectedUserId) throw new Error('Sessão alterada.');
+  });
+  await checkSession();
+  const [records, boxes] = await Promise.all([
+    exportStep('movies', () => listCollectionItems()), exportStep('boxes', () => listCollectionBoxes()),
+  ]);
+  await checkSession();
+  if (records.some(item => item.user_id !== expectedUserId) || boxes.some(item => item.user_id !== expectedUserId)) throw new CollectionExportError('session');
   const requests = photoCoverRequests(records, expectedUserId);
   const photos = requests.length ? await signedCopyPhotoCovers(expectedUserId, requests).catch(() => ({})) : {};
-  const items = exportItems(records.map(item => withPhotoCover(item, photos)), boxes);
-  const folder = new Directory(Paths.cache, `acervo-export-${Date.now()}`);
-  folder.create();
+  const items = await exportStep('document', async () => exportItems(records.map(item => withPhotoCover(item, photos)), boxes));
+  const folder = await exportStep('cache', async () => { const directory = new Directory(Paths.cache, `acervo-export-${Date.now()}`); directory.create(); return directory; });
   let pdf: File | undefined;
   try {
-    const [logoUri, bodyUri, titleUri] = await Promise.all([
-      localAsset(require('../../assets/splash animation/logo-acervo.png')),
-      localAsset(fontAssets[fontFamilies.body]), localAsset(fontAssets[fontFamilies.title]),
-    ]);
+    const decorations = optionalExportAssets({
+      logo: async () => thumbnail(await localAsset(require('../../assets/splash animation/logo-acervo.png')), true),
+      bodyFont: async () => new File(await localAsset(fontAssets[fontFamilies.body])).base64(),
+      titleFont: async () => new File(await localAsset(fontAssets[fontFamilies.title])).base64(),
+    }, (asset, cause) => { if (__DEV__) console.warn('[Acervo PDF] Asset opcional indisponível', asset, exportDiagnostic(cause)); });
     const covers: Record<string, string> = {};
     const imageCache = new Map<string, Promise<string>>();
     let cursor = 0;
@@ -87,20 +94,19 @@ export async function exportCollectionPdf(expectedUserId: string): Promise<void>
       }
     }));
     const date = new Date();
-    const html = buildCollectionDocument(items, date, {
-      logo: await thumbnail(logoUri, true), bodyFont: await new File(bodyUri).base64(),
-      titleFont: await new File(titleUri).base64(), covers,
-    });
-    if (await authenticatedUserId() !== expectedUserId) throw new Error('Sessão alterada.');
-    pdf = new File(Paths.cache, `Acervo-${date.toISOString().slice(0, 10)}-${date.getTime()}.pdf`);
-    await saveCollectionPdf(html, pdf, Print.printToFileAsync);
-    if (await authenticatedUserId() !== expectedUserId) throw new Error('Sessão alterada.');
-    await Sharing.shareAsync(pdf.uri, { mimeType: 'application/pdf', UTI: 'com.adobe.pdf', dialogTitle: 'Exportar Acervo' });
+    const assets = await decorations;
+    const html = await exportStep('document', async () => buildCollectionDocument(items, date, { ...assets, covers }));
+    await checkSession();
+    const output = await exportStep('cache', async () => new File(Paths.cache, `Acervo-${date.toISOString().slice(0, 10)}-${date.getTime()}.pdf`));
+    pdf = output;
+    await exportStep('pdf', () => saveCollectionPdf(html, output, Print.printToFileAsync));
+    await checkSession();
+    await exportStep('sharing', () => Sharing.shareAsync(output.uri, { mimeType: 'application/pdf', UTI: 'com.adobe.pdf', dialogTitle: 'Exportar Acervo' }));
   } catch (error) {
-    if (pdf?.exists) pdf.delete();
+    try { if (pdf?.exists) pdf.delete(); } catch { /* Preserve the original export failure. */ }
     throw error;
   } finally {
-    if (folder.exists) folder.delete();
+    try { if (folder.exists) folder.delete(); } catch { /* The OS may clear leftover temporary files. */ }
     // Keep the PDF in cache: Android recipients may read it after the chooser closes.
   }
 }
