@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import Star from 'lucide-react-native/icons/star';
 import Award from 'lucide-react-native/icons/award';
 import Clock from 'lucide-react-native/icons/clock';
+import Heart from 'lucide-react-native/icons/heart';
 import UserRound from 'lucide-react-native/icons/user-round';
 import Palette from 'lucide-react-native/icons/palette';
 import Cloud from 'lucide-react-native/icons/cloud';
@@ -19,12 +20,13 @@ function Row({ label, icon, value, onPress, last = false }: { label: string; ico
     {icon}<AppText variant="label" style={styles.title}>{label}</AppText>{value && <AppText variant="caption" color="textMuted">{value}</AppText>}{onPress && <ChevronRight size={spacing.md} color={colors.textMuted} />}
   </Pressable>;
 }
-export function ProfileLinks({ stats, onShortcut, onAccount, onAbout, onExport, exporting = false }: { stats: CollectionStats | null; onShortcut: (value: CollectionShortcut) => void; onAccount: () => void; onAbout: () => void; onExport: () => void; exporting?: boolean }) {
+export function ProfileLinks({ stats, onShortcut, onAccount, onAbout, onExport, onWishlist, exporting = false }: { stats: CollectionStats | null; onShortcut: (value: CollectionShortcut) => void; onAccount: () => void; onAbout: () => void; onExport: () => void; onWishlist: () => void; exporting?: boolean }) {
   const iconProps = { size: controls.iconSize, color: colors.textSecondary };
   const shortcutIcon = { ...iconProps, color: colors.accent };
   return <>
     <View style={styles.section}><AppText variant="heading">Atalhos</AppText><View style={styles.group}>
       <Row label="Favoritos" icon={<Star {...shortcutIcon} />} value={stats ? `${stats.favorites} itens` : undefined} onPress={() => onShortcut('FAVORITES')} />
+      <Row label="Lista de desejos" icon={<Heart {...shortcutIcon} />} onPress={onWishlist} />
       <Row label="Edições especiais" icon={<Award {...shortcutIcon} />} value={stats ? `${stats.specialEditions} itens` : undefined} onPress={() => onShortcut('SPECIAL_EDITIONS')} />
       <Row label="Adicionados recentemente" icon={<Clock {...shortcutIcon} />} onPress={() => onShortcut('RECENT')} last />
     </View></View>

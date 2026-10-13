@@ -86,6 +86,10 @@ function AppNavigation() {
           <Stack.Screen name="boxes/edit" />
           <Stack.Screen name="account" />
           <Stack.Screen name="profile" />
+          <Stack.Screen name="wishlist/index" />
+          <Stack.Screen name="wishlist/search" />
+          <Stack.Screen name="wishlist/add" />
+          <Stack.Screen name="wishlist/[id]" />
           <Stack.Screen name="about" />
           <Stack.Screen name="add" options={{ presentation: 'transparentModal', animation: 'fade', contentStyle: { backgroundColor: 'transparent' }, gestureEnabled: false }} />
         </Stack.Protected>

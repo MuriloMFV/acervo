@@ -3,8 +3,7 @@ import { Image, Pressable, StyleSheet, View } from 'react-native';
 import Film from 'lucide-react-native/icons/film';
 import ChevronRight from 'lucide-react-native/icons/chevron-right';
 import { AppText } from '../ui/AppText';
-import { Badge } from '../ui/Badge';
-import { MediaFormatBadge, mediaFormatLabels } from './MediaFormatBadge';
+import { mediaFormatLabels } from './MediaFormatBadge';
 import { colors, controls, radius, spacing } from '../../theme';
 import { movieLayout } from '../../theme/media';
 import type { CollectionPreviewItem } from '../../types/collectionPreview';
@@ -30,8 +29,6 @@ export const MovieListRow = memo(function MovieListRow({ item, onPress }: {
       <AppText variant="movieTitle" numberOfLines={2} ellipsizeMode="tail">{item.title}</AppText>
       <View style={styles.format}>
         <AppText variant="caption" color="textMuted">{item.year ?? '—'}</AppText>
-        <MediaFormatBadge mediaFormat={item.mediaFormat} />
-        {item.kind === 'box' && <Badge label="BOX" tone="accent" />}
       </View>
       {!!item.editionLabel && <AppText variant="caption" color="textSecondary" numberOfLines={2} ellipsizeMode="tail">{item.editionLabel}</AppText>}
       {item.kind === 'box' && <AppText variant="caption" color="textMuted">{item.movieCount} filmes</AppText>}

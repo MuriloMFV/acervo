@@ -6,6 +6,15 @@ export type PackagingType = 'STANDARD' | 'SNAPCASE' | 'DIGIPAK' | 'STEELBOOK' | 
 export type ItemCondition = 'SEALED' | 'LIKE_NEW' | 'VERY_GOOD' | 'GOOD' | 'FAIR';
 
 type Timestamps = { created_at: string; updated_at: string };
+export type DesiredFormat = MediaFormat | 'ANY';
+export type WishlistPriority = 'HIGH' | 'MEDIUM' | 'LOW';
+export type WishlistStatus = 'LOOKING' | 'FOUND' | 'ACQUIRED';
+export type WishlistItemRow = Timestamps & {
+  id: string; user_id: string; tmdb_id: number; title: string; release_year: number | null;
+  poster_url: string | null; desired_format: DesiredFormat; priority: WishlistPriority;
+  status: WishlistStatus; target_price: number | null; notes: string | null;
+  listing_url: string | null; duplicate_confirmed: boolean;
+};
 export type ProfileRow = Timestamps & {
   id: string;
   display_name: string;
@@ -87,6 +96,7 @@ export interface Database {
   public: {
     Tables: {
       profiles: Table<ProfileRow, 'id'>;
+      wishlist_items: Table<WishlistItemRow, 'user_id' | 'tmdb_id' | 'title'>;
       movies: Table<MovieRow, 'title'>;
       editions: Table<EditionRow, 'movie_id' | 'media_format', [Relation<'editions_movie_id_fkey', 'movie_id', 'movies'>]>;
       collection_items: Table<CollectionItemRow, 'user_id' | 'edition_id' | 'condition', [Relation<'collection_items_edition_id_fkey', 'edition_id', 'editions'>]>;

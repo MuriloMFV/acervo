@@ -5,8 +5,7 @@ import { colors, controls, radius, spacing } from '../../theme';
 import { movieLayout } from '../../theme/media';
 import type { CollectionPreviewItem } from '../../types/collectionPreview';
 import { AppText } from '../ui/AppText';
-import { Badge } from '../ui/Badge';
-import { MediaFormatBadge, mediaFormatLabels } from './MediaFormatBadge';
+import { mediaFormatLabels } from './MediaFormatBadge';
 
 export interface MovieCardProps {
   item: CollectionPreviewItem;
@@ -16,7 +15,7 @@ export interface MovieCardProps {
 
 function CoverArtwork({ item, width }: Pick<MovieCardProps, 'item' | 'width'>) {
   const [aspectRatio, setAspectRatio] = useState<number>(movieLayout.posterAspectRatio);
-  // Keep the grid's existing space, but size the artwork and its logo together.
+  // Keep the grid's existing space while preserving the artwork's proportions.
   const frameHeight = width / movieLayout.posterAspectRatio;
   const coverWidth = Math.min(width, frameHeight * aspectRatio);
   const coverHeight = coverWidth / aspectRatio;
@@ -30,9 +29,6 @@ function CoverArtwork({ item, width }: Pick<MovieCardProps, 'item' | 'width'>) {
       {item.poster
         ? <Image source={item.poster} style={styles.image} resizeMode="contain" resizeMethod="resize" accessible={false} onLoad={onLoad} />
         : <Film size={controls.iconSize} color={colors.textMuted} />}
-      <View style={styles.badge}>
-        {item.kind === 'box' ? <Badge label="BOX" tone="accent" /> : <MediaFormatBadge mediaFormat={item.mediaFormat} overlay />}
-      </View>
     </View>
   </View>;
 }
@@ -68,7 +64,6 @@ const styles = StyleSheet.create({
   artwork: { borderRadius: radius.md, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   image: { width: '100%', height: '100%' },
   placeholder: { backgroundColor: colors.surface },
-  badge: { position: 'absolute', top: spacing.xs, right: spacing.xs, maxWidth: '100%' },
   metadata: { paddingTop: spacing.xs, paddingHorizontal: spacing.xs },
   title: { textAlign: 'center' },
 });

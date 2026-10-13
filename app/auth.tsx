@@ -9,8 +9,11 @@ import { FormField } from '../src/components/ui/FormField';
 import { signIn, signUp } from '../src/services/supabase';
 import { colors, controls, radius, spacing, typography } from '../src/theme';
 
-const shelf = require('../assets/Prateleira Cinematográfica com Filmes Icônicos.png');
-const logo = require('../assets/logo/acervo.png');
+const shelf = require('../assets/login_shelff.png');
+const logo = require('../src/assets/splash animation/logo-acervo.png');
+const logoSource = Image.resolveAssetSource(logo);
+// This asset is a full splash canvas; display only the wordmark and underline.
+const logoCrop = { x: 150, y: 1320, width: 630, height: 205 };
 const shelfAspectRatio = 1672 / 941;
 
 function LoginField({ label, kind, ...props }: TextInputProps & { label: string; kind: 'email' | 'password' }) {
@@ -33,6 +36,7 @@ export default function AuthScreen() {
   const contentWidth = Math.max(0, width - spacing.page * 2);
   const shelfHeight = Math.min(height * 0.22, spacing.xl * 6, contentWidth / shelfAspectRatio);
   const logoWidth = Math.min(contentWidth * 0.76, spacing.xl * 8);
+  const logoScale = logoWidth / logoCrop.width;
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -83,7 +87,9 @@ export default function AuthScreen() {
       <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={!isLogin} contentContainerStyle={isLogin ? styles.loginContent : styles.content}>
         {isLogin ? <View style={styles.hero}>
           <Image accessible={false} source={shelf} resizeMode="contain" resizeMethod="resize" style={{ width: shelfHeight * shelfAspectRatio, height: shelfHeight }} />
-          <Image accessibilityLabel="Acervo" source={logo} resizeMode="contain" resizeMethod="resize" style={{ width: logoWidth, height: logoWidth / 3 }} />
+          <View accessible accessibilityRole="image" accessibilityLabel="Acervo" style={{ width: logoWidth, height: logoCrop.height * logoScale, overflow: 'hidden' }}>
+            <Image accessible={false} source={logo} resizeMode="contain" resizeMethod="resize" style={{ position: 'absolute', left: -logoCrop.x * logoScale, top: -logoCrop.y * logoScale, width: logoSource.width * logoScale, height: logoSource.height * logoScale }} />
+          </View>
         </View> : <AppText variant="title">Acervo</AppText>}
         {isLogin ? <View style={styles.loginForm}>{form}</View> : form}
         {isLogin && <AppText variant="caption" color="textMuted" style={styles.version}>versão 1.0.1 (beta)</AppText>}

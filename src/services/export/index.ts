@@ -22,7 +22,7 @@ async function localAsset(module: number): Promise<string> {
 async function thumbnail(uri: string, logo = false): Promise<string> {
   const context = ImageManipulator.manipulate(uri);
   try {
-    if (logo) context.crop({ originX: 150, originY: 1320, width: 630, height: 205 }).resize({ width: 504 });
+    if (logo) context.resize({ width: 504 });
     else context.resize({ width: 120 });
     const image = await context.renderAsync();
     try {
@@ -77,7 +77,7 @@ export async function exportCollectionPdf(expectedUserId: string): Promise<void>
   let pdf: File | undefined;
   try {
     const decorations = optionalExportAssets({
-      logo: async () => thumbnail(await localAsset(require('../../assets/splash animation/logo-acervo.png')), true),
+      logo: async () => thumbnail(await localAsset(require('../../../assets/logo/acervo.png')), true),
       bodyFont: async () => new File(await localAsset(fontAssets[fontFamilies.body])).base64(),
       titleFont: async () => new File(await localAsset(fontAssets[fontFamilies.title])).base64(),
     }, (asset, cause) => { if (__DEV__) console.warn('[Acervo PDF] Asset opcional indisponível', asset, exportDiagnostic(cause)); });

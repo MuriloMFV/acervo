@@ -55,7 +55,7 @@ export default function ProfileScreen() {
       {(collection.isPending || boxes.isPending) && <ActivityIndicator accessibilityLabel="Carregando estatísticas" color={colors.accent} />}
       {(collection.isError || boxes.isError) && <View style={styles.error}><AppText color="textMuted">Não foi possível carregar as estatísticas</AppText><ActionButton secondary label="Tentar novamente" onPress={() => { void Promise.all([collection.refetch(), boxes.refetch()]); }} /></View>}
       {stats && <CollectionStatistics stats={stats} />}
-      <ProfileLinks stats={stats} onShortcut={openShortcut} onAccount={openAccount} onAbout={() => router.navigate('/about')} onExport={() => { void exportAcervo(); }} exporting={exporting} />
+      <ProfileLinks stats={stats} onShortcut={openShortcut} onAccount={openAccount} onAbout={() => router.navigate('/about')} onExport={() => { void exportAcervo(); }} exporting={exporting} onWishlist={() => router.navigate('/wishlist')} />
     </ScrollView>
     <BottomNavigation active="profile" count={stats?.total ?? 0} onCollectionPress={openCollection} onAddPress={() => router.navigate('/add')} onProfilePress={() => {}} />
   </Screen>;
