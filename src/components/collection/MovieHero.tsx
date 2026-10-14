@@ -29,7 +29,7 @@ export function MovieHero({ movie, backCover }: { movie: MovieDetailsPreview; ba
       </View>
       <View style={styles.content}>
         <View style={styles.heroRow}>
-          <EditionCoverFlip front={movie.poster} back={backCover} title={movie.title} style={styles.poster} />
+          <EditionCoverFlip front={movie.poster} back={backCover} title={movie.title} style={styles.poster} expandable />
           <View style={styles.metadata}>
             <AppText variant="title">{movie.title}</AppText>
             {!!movie.originalTitle && <AppText variant="originalTitle" color="textSecondary">{movie.originalTitle}</AppText>}
