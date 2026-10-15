@@ -24,7 +24,7 @@ interface Props {
   onClose: () => void;
 }
 function Section({ title, children }: { title: string; children: ReactNode }) {
-  return <View style={styles.section}><AppText variant="label" color="textSecondary">{title.toLocaleUpperCase('pt-BR')}</AppText>{children}</View>;
+  return <View style={styles.section}><AppText variant="heading">{title}</AppText>{children}</View>;
 }
 function SortIcon({ sort, selected }: { sort: CollectionSort; selected: boolean }) {
   const Icon = sort.startsWith('TITLE') ? ArrowUpDown : sort.startsWith('YEAR') ? CalendarDays : sort.startsWith('PRICE') ? Banknote : Clock;
@@ -48,7 +48,7 @@ export function CollectionFiltersPanel({ filters, options, onApply, onClear, onC
       <View style={styles.header}>
         <IconButton accessibilityLabel="Fechar filtros" onPress={onClose}><X size={controls.iconSize} color={colors.text} /></IconButton>
         <AppText variant="heading" style={styles.title}>Filtros e ordenação</AppText>
-        <Pressable accessibilityRole="button" onPress={() => { setDraft(defaultCollectionFilters()); onClear(); }} style={styles.clear}><AppText variant="label" color="accent">LIMPAR</AppText></Pressable>
+        <Pressable accessibilityRole="button" onPress={() => { setDraft(defaultCollectionFilters()); onClear(); }} style={styles.clear}><AppText variant="label" color="accent">Limpar</AppText></Pressable>
       </View>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Section title="Ordenar por">
@@ -78,11 +78,11 @@ const styles = StyleSheet.create({
   title: { flex: 1 }, clear: { minHeight: controls.minTouchSize, justifyContent: 'center' },
   content: { gap: spacing.xl, paddingVertical: spacing.md }, section: { gap: spacing.md },
   choices: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  sort: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: controls.minTouchSize, padding: spacing.md, backgroundColor: colors.surfaceElevated, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border },
-  selectedSort: { borderColor: colors.primary, backgroundColor: colors.accentSurface },
+  sort: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: controls.minTouchSize, padding: spacing.md, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+  selectedSort: { backgroundColor: colors.accentSurface, borderRadius: radius.md },
   radio: { width: controls.iconSize, height: controls.iconSize, borderRadius: radius.full, borderWidth: 1, borderColor: colors.textMuted, alignItems: 'center', justifyContent: 'center' },
   selectedRadio: { borderColor: colors.primary, backgroundColor: colors.primary },
-  switches: { padding: spacing.md, gap: spacing.md, backgroundColor: colors.surface, borderRadius: radius.lg },
+  switches: { paddingVertical: spacing.md, gap: spacing.md, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
   switchRow: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center', minHeight: controls.minTouchSize },
   footer: { paddingVertical: spacing.md, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
   pressed: { opacity: controls.pressedOpacity },

@@ -1,5 +1,6 @@
+import { TouchSurface as Pressable } from './TouchSurface';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, type PressableProps } from 'react-native';
+import { StyleSheet, type PressableProps } from 'react-native';
 import { colors, controls, radius, spacing } from '../../theme';
 
 export interface IconButtonProps extends Omit<PressableProps, 'children' | 'accessibilityLabel'> {

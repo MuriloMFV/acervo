@@ -9,7 +9,7 @@ import { DistributorDisplay } from '../ui/DistributorDisplay';
 import { regionEncodingDraft } from '../../utils/videoStandard';
 import { discCountLabel } from '../../services/collection/editionEditing';
 import { mediaFormatLabels } from '../movie/MediaFormatBadge';
-import { colors, controls, radius, spacing } from '../../theme';
+import { colors, controls, spacing } from '../../theme';
 import type { CollectionItemDetailsPreview } from '../../types/collectionDetails';
 import { conditionLabels, packagingLabels, formatPurchaseDate, formatPurchasePrice } from '../../utils/collectionDetails';
 
@@ -46,8 +46,8 @@ export function EditionDetails({ item, special = false, limited = false, onEdit 
       {(special || limited) && <View style={styles.heading}><AssetIcon name="limited-edition" /><AppText variant="caption" color="textSecondary">{special && limited ? 'Edição especial · limitada' : limited ? 'Edição limitada' : 'Edição especial'}</AppText></View>}
       <View style={styles.grid}>
         {fields.map((field) => (
-          <View key={field.label} style={styles.cell} accessible={field.label === 'Formato' || field.label === 'Discos' || undefined} accessibilityLabel={field.label === 'Formato' || field.label === 'Discos' ? `${field.label}: ${field.value}` : undefined}>
-            <AppText variant="caption" color="textMuted">{field.label.toLocaleUpperCase('pt-BR')}</AppText>
+          <View key={field.label} style={[styles.cell, ['Código de barras', 'Edição', 'Distribuidora'].includes(field.label) && styles.wide]} accessible={field.label === 'Formato' || field.label === 'Discos' || undefined} accessibilityLabel={field.label === 'Formato' || field.label === 'Discos' ? `${field.label}: ${field.value}` : undefined}>
+            <AppText variant="caption" color="textMuted">{field.label}</AppText>
             {field.label === 'Formato' ? <MediaFormatIcon format={edition.mediaFormat} color={colors.text} /> : field.label === 'País' ? <CountryDisplay value={edition.country} /> : field.label === 'Codificação' ? <VideoStandardDisplay value={regionEncoding.videoStandard} /> : field.label === 'Distribuidora' ? <DistributorDisplay value={edition.publisher} /> : field.label === 'Discos' ? (
               <View style={styles.discs}>
                 {Array.from({ length: visibleDiscCount }, (_, index) => (
@@ -64,7 +64,7 @@ export function EditionDetails({ item, special = false, limited = false, onEdit 
       <AppText variant="heading">Minha cópia</AppText>
       <View style={styles.grid}>
         {copyFields.map(field => <View key={field.label} style={[styles.cell, (field.label === 'Observações' || field.label === 'Local da compra') && styles.wide]}>
-          <AppText variant="caption" color="textMuted">{field.label.toLocaleUpperCase('pt-BR')}</AppText>
+          <AppText variant="caption" color="textMuted">{field.label}</AppText>
           <AppText variant="label" color={'accent' in field && field.accent ? 'accent' : 'text'}>{field.value}</AppText>
         </View>)}
       </View>
@@ -76,8 +76,8 @@ const styles = StyleSheet.create({
   section: { gap: spacing.md },
   heading: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.sm },
   title: { flexGrow: 1 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  cell: { flexBasis: '47%', flexGrow: 1, borderRadius: radius.md, backgroundColor: colors.surface, padding: spacing.md, gap: spacing.sm },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', columnGap: spacing.lg },
+  cell: { flexBasis: '43%', flexGrow: 1, minWidth: 0, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border, paddingVertical: spacing.md, gap: spacing.sm },
   wide: { flexBasis: '100%' },
   discs: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.sm },
 });

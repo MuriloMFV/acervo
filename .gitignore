@@ -45,3 +45,5 @@ yarn-error.*
 # Supabase CLI cache and local branches
 supabase/.temp/
 supabase/.branches/
+# Playwright CLI output (may contain credentials)
+.playwright-cli/

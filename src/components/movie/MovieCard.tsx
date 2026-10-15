@@ -1,7 +1,8 @@
+import { TouchSurface as Pressable } from '../ui/TouchSurface';
 import { memo, useState } from 'react';
 import Film from 'lucide-react-native/icons/film';
-import { Image, Pressable, StyleSheet, View, type ImageLoadEvent } from 'react-native';
-import { colors, controls, radius, spacing } from '../../theme';
+import { Image, StyleSheet, View, useWindowDimensions, type ImageLoadEvent } from 'react-native';
+import { colors, controls, radius, spacing, typography } from '../../theme';
 import { movieLayout } from '../../theme/media';
 import type { CollectionPreviewItem } from '../../types/collectionPreview';
 import { AppText } from '../ui/AppText';
@@ -35,6 +36,7 @@ function CoverArtwork({ item, width }: Pick<MovieCardProps, 'item' | 'width'>) {
 }
 
 export const MovieCard = memo(function MovieCard({ item, width, onPress }: MovieCardProps) {
+  const { fontScale } = useWindowDimensions();
   return (
     <Pressable
       accessible
@@ -50,10 +52,11 @@ export const MovieCard = memo(function MovieCard({ item, width, onPress }: Movie
           variant="movieTitle"
           numberOfLines={movieLayout.titleLines}
           ellipsizeMode="tail"
-          style={styles.title}
+          style={[styles.title, { minHeight: typography.movieTitle.lineHeight * movieLayout.titleLines * fontScale }]}
         >
           {item.title}
         </AppText>
+        <AppText variant="caption" color="textMuted" style={styles.title}>{[item.year, mediaFormatLabels[item.mediaFormat]].filter(value => value != null).join(' · ')}</AppText>
         {item.kind === 'box' && <AppText variant="caption" color="textMuted" style={styles.title}>{item.movieCount} filmes</AppText>}
       </View>
     </Pressable>
@@ -62,9 +65,9 @@ export const MovieCard = memo(function MovieCard({ item, width, onPress }: Movie
 
 const styles = StyleSheet.create({
   poster: { width: '100%', aspectRatio: movieLayout.posterAspectRatio, alignItems: 'center', justifyContent: 'center' },
-  artwork: { borderRadius: radius.md, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
+  artwork: { borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border, borderRadius: radius.sm, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   image: { width: '100%', height: '100%' },
   placeholder: { backgroundColor: colors.surface },
-  metadata: { paddingTop: spacing.xs, paddingHorizontal: spacing.xs },
-  title: { textAlign: 'center' },
+  metadata: { gap: spacing.xs, paddingTop: spacing.sm },
+  title: { textAlign: 'left' },
 });

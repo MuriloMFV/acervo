@@ -19,7 +19,7 @@ export interface MovieGridProps {
 const keyExtractor = (row: MovieGridRow) => row.key;
 const sectionHeader = ({ section }: { section: MovieGridSection }) => section.label === null ? null : (
   <View style={styles.sectionHeader}>
-    <AppText accessibilityRole="header" variant="heading" color="textSecondary">{section.label}</AppText>
+    <AppText accessibilityRole="header" variant="eyebrow" color="textMuted">{section.label}</AppText>
     <View style={styles.divider} />
   </View>
 );
@@ -55,8 +55,8 @@ export const MovieGrid = forwardRef<SectionList<MovieGridRow, MovieGridSection>,
 });
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  row: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm, marginBottom: spacing.md },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.xs, paddingTop: spacing.sm, paddingBottom: spacing.xs },
+  row: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm, marginBottom: spacing.lg },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingTop: spacing.sm, paddingBottom: spacing.md },
   divider: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: colors.border },
   content: { paddingBottom: spacing.lg },
 });

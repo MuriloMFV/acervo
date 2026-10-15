@@ -13,7 +13,7 @@ import { useCollection } from '../src/hooks/useCollection';
 import { useCollectionBoxes } from '../src/hooks/useCollectionBoxes';
 import { useProfile } from '../src/hooks/useProfile';
 import { useProfilePhoto } from '../src/hooks/useProfilePhoto';
-import { colors, radius, spacing } from '../src/theme';
+import { colors, spacing } from '../src/theme';
 import { useCollectionFilters } from '../src/contexts/CollectionFiltersContext';
 import { CollectionFiltersPanel } from '../src/components/collection/CollectionFiltersPanel';
 import { applyCollectionBoxFilters, applyCollectionFilters, availableCollectionFilters } from '../src/utils/collectionFilters';
@@ -55,7 +55,7 @@ export default function CollectionScreen() {
 
   return (
     <Screen edges={['top', 'left', 'right']} style={styles.screen}>
-      <CollectionBrandHeader photoUrl={photo.url} photoLoading={photo.loading} />
+      <CollectionBrandHeader photoUrl={photo.url} photoLoading={photo.loading} onProfilePress={() => router.navigate('/profile')} />
       <View style={[styles.content, view === 'grid' && styles.gridContent]}>
         <CollectionItems
           items={items}
@@ -78,7 +78,6 @@ export default function CollectionScreen() {
           }
           footer={visibleCount ? (
             <View style={styles.footer}>
-              <View style={styles.handle} />
               <AppText variant="caption" color="textMuted">{visibleCount} {visibleCount === 1 ? 'item' : 'itens'} no seu acervo</AppText>
             </View>
           ) : undefined}
@@ -94,9 +93,8 @@ export default function CollectionScreen() {
 const styles = StyleSheet.create({
   screen: { paddingHorizontal: 0 },
   content: { flex: 1, paddingHorizontal: spacing.page },
-  gridContent: { paddingHorizontal: spacing.sm },
-  header: { gap: spacing.sm, paddingTop: spacing.sm, paddingBottom: spacing.sm },
-  gridHeader: { paddingHorizontal: spacing.page - spacing.sm, paddingBottom: spacing.md },
+  gridContent: { paddingHorizontal: spacing.page },
+  header: { gap: spacing.md, paddingTop: spacing.lg, paddingBottom: spacing.lg },
+  gridHeader: { paddingBottom: spacing.lg },
   footer: { alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.lg },
-  handle: { width: spacing.xl, height: spacing.xs, borderRadius: radius.full, backgroundColor: colors.surfaceActive },
 });

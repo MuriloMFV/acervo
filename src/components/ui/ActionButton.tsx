@@ -1,4 +1,5 @@
-import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
+import { TouchSurface as Pressable } from './TouchSurface';
+import { ActivityIndicator, StyleSheet } from 'react-native';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { AppText } from './AppText';
 import { colors, controls, radius, spacing } from '../../theme';
@@ -12,9 +13,9 @@ export function ActionButton({ label, onPress, busy = false, disabled = false, s
   </Pressable>;
 }
 const styles = StyleSheet.create({
-  button: { minHeight: controls.fieldMinHeight, maxWidth: '100%', alignItems: 'center', justifyContent: 'center', padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.primary },
+  button: { minHeight: controls.fieldMinHeight, maxWidth: '100%', alignItems: 'center', justifyContent: 'center', padding: spacing.md, borderRadius: radius.md + spacing.xs, backgroundColor: colors.primary },
   label: { textAlign: 'center', flexShrink: 1 },
-  secondary: { backgroundColor: colors.surfaceElevated },
+  secondary: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
   pressed: { opacity: controls.pressedOpacity },
   disabled: { opacity: controls.disabledOpacity },
 });

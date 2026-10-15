@@ -11,7 +11,7 @@ import Download from 'lucide-react-native/icons/download';
 import Info from 'lucide-react-native/icons/info';
 import ChevronRight from 'lucide-react-native/icons/chevron-right';
 import { AppText } from '../ui';
-import { colors, controls, radius, spacing } from '../../theme';
+import { colors, controls, spacing } from '../../theme';
 import type { CollectionShortcut } from '../../types/collectionFilters';
 import type { CollectionStats } from '../../types/collectionStats';
 
@@ -40,7 +40,7 @@ export function ProfileLinks({ stats, onShortcut, onAccount, onAbout, onExport, 
   </>;
 }
 const styles = StyleSheet.create({
-  section: { gap: spacing.md }, group: { paddingHorizontal: spacing.md, borderRadius: radius.lg, backgroundColor: colors.surface },
+  section: { gap: spacing.md }, group: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
   row: { minHeight: controls.minTouchSize + spacing.md, paddingVertical: spacing.md, flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  title: { flex: 1 }, border: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }, pressed: { opacity: controls.pressedOpacity },
+  title: { flex: 1, minWidth: 0 }, border: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }, pressed: { opacity: controls.pressedOpacity },
 });

@@ -1,39 +1,61 @@
 import { StyleSheet, View } from 'react-native';
-import LibraryBig from 'lucide-react-native/icons/library-big';
-import Banknote from 'lucide-react-native/icons/banknote';
 import { AppText } from '../ui';
-import { colors, controls, radius, spacing } from '../../theme';
+import { colors, spacing } from '../../theme';
 import type { CollectionStats, FrequentValue } from '../../types/collectionStats';
 import type { MediaFormat } from '../../services/supabase/types';
 import { mediaFormatLabels } from '../movie/MediaFormatBadge';
 import { formatPurchasePrice } from '../../utils/collectionDetails';
 
 const formats: MediaFormat[] = ['UHD_4K', 'BLURAY', 'DVD', 'VHS'];
-function FrequentCard({ label, value, wide = false }: { label: string; value: FrequentValue | null; wide?: boolean }) {
-  return <View style={[styles.card, styles.frequent, wide && styles.wide]}>
+function FrequentValueRow({ label, value }: { label: string; value: FrequentValue | null }) {
+  return <View style={styles.fact}>
     <AppText variant="caption" color="textMuted">{label}</AppText>
-    <AppText variant="heading">{value?.label ?? '—'}</AppText>
-    {value && <AppText variant="caption" color="textSecondary">{value.count} {value.count === 1 ? 'filme' : 'filmes'}</AppText>}
+    <View style={styles.factValue}>
+      <AppText variant="label" style={styles.flex}>{value?.label ?? '—'}</AppText>
+      {value && <AppText variant="caption" color="textMuted">{value.count} {value.count === 1 ? 'filme' : 'filmes'}</AppText>}
+    </View>
   </View>;
 }
 export function CollectionStatistics({ stats }: { stats: CollectionStats }) {
   return <View style={styles.section}>
-    <View style={styles.heading}><AppText variant="heading" style={styles.title}>Estatísticas</AppText><AppText variant="caption" color="textMuted">VISÃO GERAL</AppText></View>
-    <View style={[styles.card, styles.total]}><View style={styles.title}><AppText variant="caption" color="textMuted">ITENS FÍSICOS TOTAIS</AppText><View style={styles.numberRow}><AppText variant="title" color="accent">{stats.total}</AppText><AppText variant="caption" color="textSecondary">itens</AppText></View></View><LibraryBig size={controls.iconSize + spacing.sm} color={colors.accent} /></View>
-    <View style={styles.frequencies}>
-      <View style={[styles.card, styles.frequent]}><AppText variant="caption" color="textMuted">FILMES INDIVIDUAIS</AppText><AppText variant="heading">{stats.individualMovies}</AppText></View>
-      <View style={[styles.card, styles.frequent]}><AppText variant="caption" color="textMuted">BOXES</AppText><AppText variant="heading">{stats.boxes}</AppText></View>
-      <View style={[styles.card, styles.wide]}><AppText variant="caption" color="textMuted">TOTAL DE FILMES NO ACERVO</AppText><AppText variant="heading" color="accent">{stats.totalMovies}</AppText><AppText variant="caption" color="textSecondary">Inclui os filmes dentro dos boxes</AppText></View>
+    <AppText variant="heading">A coleção em números</AppText>
+    <View style={styles.total}>
+      <AppText variant="display">{stats.total.toLocaleString('pt-BR')}</AppText>
+      <AppText variant="caption" color="textMuted">{stats.total === 1 ? 'item físico' : 'itens físicos'}</AppText>
     </View>
-    <View style={styles.formats}>{formats.map((format) => <View key={format} style={[styles.card, styles.format]}><AppText variant="caption" color="textMuted">{mediaFormatLabels[format].toLocaleUpperCase('pt-BR')}</AppText><AppText variant="heading">{stats.formats[format]}</AppText><AppText variant="caption" color="accent">{(stats.total ? stats.formats[format] / stats.total * 100 : 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%</AppText></View>)}</View>
-    <View style={styles.frequencies}><FrequentCard label="GÊNERO MAIS PRESENTE" value={stats.genre} /><FrequentCard label="DÉCADA MAIS PRESENTE" value={stats.decade} /><FrequentCard label="DIRETOR MAIS PRESENTE" value={stats.director} wide /></View>
-    <View style={[styles.card, styles.total]}><Banknote size={controls.iconSize} color={colors.accent} /><View style={styles.title}><AppText variant="caption" color="textMuted">VALOR TOTAL REGISTRADO</AppText><AppText variant="heading" color="accent">{formatPurchasePrice(stats.pricedItems ? stats.registeredValue : null)}</AppText></View></View>
+    <View style={styles.inventory}>
+      <View style={styles.inventoryCell}><AppText variant="heading">{stats.individualMovies}</AppText><AppText variant="caption" color="textMuted">Filmes individuais</AppText></View>
+      <View style={styles.inventoryCell}><AppText variant="heading">{stats.boxes}</AppText><AppText variant="caption" color="textMuted">Boxes</AppText></View>
+      <View style={styles.inventoryCell}><AppText variant="heading">{stats.totalMovies}</AppText><AppText variant="caption" color="textMuted">Filmes, com os boxes</AppText></View>
+    </View>
+    <View style={styles.formats}>{formats.map(format => <View key={format} style={styles.format}>
+      <View style={styles.factValue}>
+        <AppText variant="label" style={styles.flex}>{mediaFormatLabels[format]}</AppText>
+        <AppText variant="heading" style={styles.number}>{stats.formats[format]}</AppText>
+      </View>
+      <AppText variant="caption" color="textMuted">{(stats.total ? stats.formats[format] / stats.total : 0).toLocaleString('pt-BR', { style: 'percent', maximumFractionDigits: 1 })} da coleção</AppText>
+    </View>)}</View>
+    <View>
+      <FrequentValueRow label="Gênero mais presente" value={stats.genre} />
+      <FrequentValueRow label="Década mais presente" value={stats.decade} />
+      <FrequentValueRow label="Diretor mais presente" value={stats.director} />
+    </View>
+    <View style={styles.value}>
+      <AppText variant="caption" color="textSecondary">Valor total registrado</AppText>
+      <AppText variant="title" color="accent">{formatPurchasePrice(stats.pricedItems ? stats.registeredValue : null)}</AppText>
+    </View>
   </View>;
 }
 const styles = StyleSheet.create({
-  section: { gap: spacing.md }, heading: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm }, title: { flex: 1, gap: spacing.sm },
-  card: { padding: spacing.md, borderRadius: radius.lg, backgroundColor: colors.surface, gap: spacing.sm },
-  total: { flexDirection: 'row', alignItems: 'center', gap: spacing.md }, numberRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.sm },
-  formats: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }, format: { flexGrow: 1, flexBasis: '21%', minWidth: controls.minTouchSize + spacing.lg, paddingHorizontal: spacing.sm, alignItems: 'center' },
-  frequencies: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }, frequent: { flexGrow: 1, flexBasis: '46%' }, wide: { flexBasis: '100%' },
+  section: { gap: spacing.lg },
+  flex: { flex: 1, minWidth: 0 },
+  total: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', gap: spacing.sm },
+  inventory: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, paddingBottom: spacing.lg, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+  inventoryCell: { flex: 1, minWidth: 84, gap: spacing.xs },
+  formats: { flexDirection: 'row', flexWrap: 'wrap', columnGap: spacing.lg },
+  format: { flexGrow: 1, flexBasis: '43%', paddingVertical: spacing.md, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border, gap: spacing.xs },
+  fact: { gap: spacing.sm, paddingVertical: spacing.md, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+  factValue: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', gap: spacing.sm },
+  number: { fontVariant: ['tabular-nums'] },
+  value: { gap: spacing.sm, borderLeftWidth: 2, borderLeftColor: colors.primary, paddingLeft: spacing.md, paddingVertical: spacing.sm },
 });

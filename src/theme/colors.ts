@@ -1,17 +1,17 @@
-// Screenshots take precedence over the conflicting palettes in DESIGN.md.
+// Quiet graphite surfaces keep physical cover artwork in the foreground.
 export const colors = {
-  background: '#11131A',
-  surface: '#191B22',
-  surfaceElevated: '#1D1F27',
-  surfaceActive: '#282A31',
-  border: '#282A31',
-  primary: '#E5A93C',
-  accent: '#FFC665',
-  onPrimary: '#432C00',
-  accentSurface: '#332D24',
-  text: '#E2E2EC',
-  textSecondary: '#D4C4B0',
-  textMuted: '#9D8F7C',
+  background: '#101114',
+  surface: '#191A1E',
+  surfaceElevated: '#222327',
+  surfaceActive: '#303136',
+  border: '#35363B',
+  primary: '#DDB569',
+  accent: '#E8C583',
+  onPrimary: '#241B0D',
+  accentSurface: '#30291E',
+  text: '#F2F0EA',
+  textSecondary: '#C9C6BF',
+  textMuted: '#A09D96',
   danger: '#FFB4AB',
 } as const;
 

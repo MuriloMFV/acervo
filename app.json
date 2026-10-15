@@ -20,7 +20,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#11131A",
+          "backgroundColor": "#101114",
           "image": "./assets/app-icon/splash.png",
           "resizeMode": "contain",
           "ios": {
@@ -69,7 +69,7 @@
       }
     },
     "icon": "./assets/app-icon/icon.png",
-    "backgroundColor": "#11131A",
+    "backgroundColor": "#101114",
     "owner": "murilomfvs-dev"
   }
 }

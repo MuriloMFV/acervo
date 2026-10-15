@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Search from 'lucide-react-native/icons/search';
 import X from 'lucide-react-native/icons/x';
 import { IconButton } from '../ui';
@@ -10,16 +11,19 @@ export interface CollectionSearchBarProps {
 }
 
 export function CollectionSearchBar({ value, onChangeText }: CollectionSearchBarProps) {
+  const [focused, setFocused] = useState(false);
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, focused && styles.focused]}>
       <Search size={controls.iconSize} color={colors.textMuted} />
       <TextInput
         accessibilityLabel="Buscar no meu acervo"
-        placeholder="Buscar no meu acervo..."
+        placeholder="Buscar no acervo…"
         placeholderTextColor={colors.textMuted}
         selectionColor={colors.accent}
         value={value}
         onChangeText={onChangeText}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
         autoCorrect={false}
         returnKeyType="search"
         style={styles.input}
@@ -36,11 +40,12 @@ export function CollectionSearchBar({ value, onChangeText }: CollectionSearchBar
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
-    backgroundColor: colors.surfaceElevated, borderRadius: radius.lg,
-    paddingHorizontal: spacing.sm,
+    backgroundColor: colors.surface, borderRadius: radius.md + spacing.xs, borderWidth: 1, borderColor: colors.border,
+    paddingHorizontal: spacing.md,
   },
+  focused: { borderColor: colors.accent },
   input: {
-    flex: 1, minWidth: 0, minHeight: controls.minTouchSize,
-    ...typography.label, color: colors.text, paddingVertical: spacing.sm,
+    flex: 1, minWidth: 0, minHeight: controls.fieldMinHeight,
+    ...typography.body, color: colors.text, paddingVertical: spacing.sm,
   },
 });

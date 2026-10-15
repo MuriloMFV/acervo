@@ -28,9 +28,9 @@ export const MovieListRow = memo(function MovieListRow({ item, onPress }: {
         : <Film size={controls.iconSize} color={colors.textMuted} />}
     </View>
     <View style={styles.metadata}>
-      <AppText variant="movieTitle" numberOfLines={2} ellipsizeMode="tail">{item.title}</AppText>
+      <AppText variant="searchResultTitle" numberOfLines={2} ellipsizeMode="tail">{item.title}</AppText>
       <View style={styles.format}>
-        <AppText variant="caption" color="textMuted">{item.year ?? '—'}</AppText>
+        <AppText variant="caption" color="textMuted">{item.year ?? '—'} · {mediaFormatLabels[item.mediaFormat]}</AppText>
       </View>
       {!!item.editionLabel && <AppText variant="caption" color="textSecondary" numberOfLines={2} ellipsizeMode="tail">{item.editionLabel}</AppText>}
       {item.kind === 'box' && <AppText variant="caption" color="textMuted">{item.movieCount} filmes</AppText>}
@@ -40,7 +40,7 @@ export const MovieListRow = memo(function MovieListRow({ item, onPress }: {
 });
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, padding: spacing.sm, borderRadius: radius.md, backgroundColor: colors.surfaceElevated },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
   pressed: { opacity: controls.pressedOpacity },
   poster: { width: spacing.xl * 2, aspectRatio: movieLayout.posterAspectRatio, flexShrink: 0, overflow: 'hidden', borderRadius: radius.sm, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   image: { width: '100%', height: '100%' },

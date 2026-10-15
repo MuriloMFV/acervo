@@ -1,5 +1,6 @@
+import { TouchSurface as Pressable } from '../ui/TouchSurface';
 import type { ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ScanBarcode from 'lucide-react-native/icons/scan-barcode';
 import Search from 'lucide-react-native/icons/search';
@@ -59,11 +60,11 @@ const styles = StyleSheet.create({
   sheet: { backgroundColor: colors.surface, borderTopLeftRadius: radius.lg + spacing.sm, borderTopRightRadius: radius.lg + spacing.sm, borderTopWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
   content: { paddingHorizontal: spacing.page, paddingTop: spacing.sm, gap: spacing.sm },
   handle: { width: spacing.xl + spacing.sm, height: spacing.xs, alignSelf: 'center', borderRadius: radius.full, backgroundColor: colors.textMuted, opacity: 0.4, marginBottom: spacing.sm },
-  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
   heading: { flex: 1 },
-  option: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, padding: spacing.md, backgroundColor: colors.surfaceElevated, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.surfaceElevated },
-  highlighted: { borderColor: colors.accentSurface },
-  icon: { width: controls.minTouchSize, height: controls.minTouchSize, borderRadius: radius.md, backgroundColor: colors.surfaceActive, alignItems: 'center', justifyContent: 'center' },
+  option: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.md, paddingHorizontal: spacing.sm, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+  highlighted: { backgroundColor: colors.accentSurface, borderRadius: radius.md, borderColor: colors.primary, marginBottom: spacing.sm },
+  icon: { width: controls.minTouchSize, height: controls.minTouchSize, borderRadius: radius.md, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   highlightedIcon: { backgroundColor: colors.accentSurface },
   optionLabel: { flex: 1 },
   pressed: { opacity: controls.pressedOpacity },

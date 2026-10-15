@@ -14,7 +14,7 @@ export function ProfileHeader({ profile, displayName, photoUrl, photoBusy = fals
   const photoLabel = profile?.avatar_url ? 'Alterar foto' : 'Adicionar foto';
   return <View style={styles.section}>
     <View style={styles.brandRow}>
-      <View style={styles.brandIcon}><AssetIcon name="dvd-case" size={controls.iconSize + spacing.sm + spacing.xs} /></View>
+      <View style={styles.brandIcon}><AssetIcon name="dvd-case" size={28} /></View>
       <View style={styles.title}><AppText variant="heading">Acervo</AppText></View>
       <IconButton accessibilityLabel="Buscar na coleção" onPress={onCollectionPress}><Search size={controls.iconSize} color={colors.textSecondary} /></IconButton>
       <IconButton accessibilityLabel="Conta" selected onPress={onAccountPress}><UserRound size={controls.iconSize} color={colors.onPrimary} /></IconButton>
@@ -25,7 +25,7 @@ export function ProfileHeader({ profile, displayName, photoUrl, photoBusy = fals
         <View style={styles.avatarBadge}><Camera size={controls.iconSize - spacing.sm} color={colors.onPrimary} accessible={false} /></View>
       </Pressable>
       <View style={styles.title}>
-        <AppText variant="heading">{displayName}</AppText>
+        <AppText variant="title">{displayName}</AppText>
         <Pressable accessibilityRole="button" accessibilityState={{ disabled: !profile || photoBusy, busy: photoBusy }} disabled={!profile || photoBusy} onPress={onPhotoPress} style={({ pressed }) => [styles.photoAction, pressed && styles.pressed]}><AppText variant="label" color="accent">{photoBusy ? 'Salvando foto…' : photoLabel}</AppText></Pressable>
       </View>
     </View>
@@ -33,8 +33,8 @@ export function ProfileHeader({ profile, displayName, photoUrl, photoBusy = fals
 }
 const styles = StyleSheet.create({
   section: { gap: spacing.md }, brandRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm }, title: { flex: 1, gap: spacing.sm },
-  brandIcon: { width: controls.minTouchSize, height: controls.minTouchSize, borderRadius: radius.md, backgroundColor: colors.surfaceActive, alignItems: 'center', justifyContent: 'center' },
-  identity: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md, backgroundColor: colors.surface, borderRadius: radius.lg },
+  brandIcon: { width: controls.minTouchSize, height: controls.minTouchSize, borderRadius: radius.md, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center' },
+  identity: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.lg, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
   avatarButton: { width: controls.minTouchSize + spacing.xl, height: controls.minTouchSize + spacing.xl },
   avatarBadge: { position: 'absolute', bottom: 0, right: 0, padding: spacing.xs, borderRadius: radius.full, backgroundColor: colors.primary },
   photoAction: { minHeight: controls.minTouchSize, justifyContent: 'center', alignSelf: 'flex-start' },

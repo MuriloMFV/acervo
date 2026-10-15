@@ -1,5 +1,6 @@
+import { TouchSurface as Pressable } from './TouchSurface';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, type PressableProps } from 'react-native';
+import { StyleSheet, type PressableProps } from 'react-native';
 import { colors, controls, radius, spacing } from '../../theme';
 import { AppText } from './AppText';
 
@@ -48,11 +49,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderRadius: radius.full,
-    backgroundColor: colors.surfaceActive,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
   },
   label: { flexShrink: 1, textAlign: 'center' },
-  selected: { backgroundColor: colors.primary },
+  selected: { backgroundColor: colors.primary, borderColor: colors.primary },
   pressed: { opacity: controls.pressedOpacity },
   disabled: { opacity: controls.disabledOpacity },
 });
